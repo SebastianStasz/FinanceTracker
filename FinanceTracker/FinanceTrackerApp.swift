@@ -9,12 +9,29 @@ import SwiftUI
 
 @main
 struct FinanceTrackerApp: App {
-    let persistenceController = PersistenceController.shared
+    private let persistence: PersistenceController
+    
+    @StateObject private var dataManager: DataManager
+    @StateObject private var walletListVM: WalletListViewModel
 
+    init() {
+        // MARK: Real
+//        self.persistence = PersistenceController()
+        
+        // MARK: Preview
+        self.persistence = PersistenceController.preview
+        
+        let dataManager = DataManager(context: persistence.context)
+        self._dataManager = StateObject(wrappedValue: dataManager)
+        
+        let walletListVM = WalletListViewModel(dataManager: dataManager)
+        self._walletListVM = StateObject(wrappedValue: walletListVM)
+    }
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            WalletListView(walletListVM: walletListVM)
+                .environmentObject(dataManager)
         }
     }
 }
