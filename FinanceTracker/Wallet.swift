@@ -56,7 +56,7 @@ extension Wallet {
         let totalIncomes = incomes.map { $0.value_ }.reduce(0, +)
         let totalExpenses = expenses.map { $0.value_ }.reduce(0, +)
         let total = (totalIncomes - totalExpenses)
-        let balance = initialBalance_ + (total * 100).rounded() / 100
+        let balance = ((initialBalance_ + total) * 100).rounded() / 100
         return balance
     }
     

@@ -10,10 +10,13 @@
 		9E056BDA25D6CC4100304775 /* WalletActionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E056BD925D6CC4100304775 /* WalletActionViewModel.swift */; };
 		9E056BE125D6DEE800304775 /* WalletListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E056BE025D6DEE800304775 /* WalletListViewModel.swift */; };
 		9E056BED25D6E4E300304775 /* WalletActionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E056BEC25D6E4E300304775 /* WalletActionView.swift */; };
+		9E2FF8B025D8653800D89F8E /* View + Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2FF8AF25D8653800D89F8E /* View + Extensions.swift */; };
+		9E2FF8B525D8660100D89F8E /* PrimaryButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2FF8B425D8660100D89F8E /* PrimaryButtonStyle.swift */; };
+		9E2FF8B925D8666900D89F8E /* Image + Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2FF8B825D8666900D89F8E /* Image + Extensions.swift */; };
 		9E6A761F25D667E100B85E87 /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6A761E25D667E100B85E87 /* DataManager.swift */; };
 		9E9C49E325D5213C00D685F4 /* WalletListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9C49E225D5213C00D685F4 /* WalletListView.swift */; };
 		9E9C49E925D52A7600D685F4 /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9C49E825D52A7600D685F4 /* Wallet.swift */; };
-		9E9C49F125D52B5300D685F4 /* Date+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9C49F025D52B5300D685F4 /* Date+.swift */; };
+		9E9C49F125D52B5300D685F4 /* Date + Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9C49F025D52B5300D685F4 /* Date + Extensions.swift */; };
 		9E9C49F625D533AB00D685F4 /* WalletType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9C49F525D533AB00D685F4 /* WalletType.swift */; };
 		9E9C49F925D5349500D685F4 /* Income&Expense.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9C49F825D5349500D685F4 /* Income&Expense.swift */; };
 		9EDB440125D5ACA700F1932D /* SampleDataGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EDB440025D5ACA700F1932D /* SampleDataGenerator.swift */; };
@@ -45,10 +48,13 @@
 		9E056BD925D6CC4100304775 /* WalletActionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletActionViewModel.swift; sourceTree = "<group>"; };
 		9E056BE025D6DEE800304775 /* WalletListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletListViewModel.swift; sourceTree = "<group>"; };
 		9E056BEC25D6E4E300304775 /* WalletActionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletActionView.swift; sourceTree = "<group>"; };
+		9E2FF8AF25D8653800D89F8E /* View + Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View + Extensions.swift"; sourceTree = "<group>"; };
+		9E2FF8B425D8660100D89F8E /* PrimaryButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButtonStyle.swift; sourceTree = "<group>"; };
+		9E2FF8B825D8666900D89F8E /* Image + Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Image + Extensions.swift"; sourceTree = "<group>"; };
 		9E6A761E25D667E100B85E87 /* DataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
 		9E9C49E225D5213C00D685F4 /* WalletListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletListView.swift; sourceTree = "<group>"; };
 		9E9C49E825D52A7600D685F4 /* Wallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wallet.swift; sourceTree = "<group>"; };
-		9E9C49F025D52B5300D685F4 /* Date+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+.swift"; sourceTree = "<group>"; };
+		9E9C49F025D52B5300D685F4 /* Date + Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date + Extensions.swift"; sourceTree = "<group>"; };
 		9E9C49F525D533AB00D685F4 /* WalletType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletType.swift; sourceTree = "<group>"; };
 		9E9C49F825D5349500D685F4 /* Income&Expense.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Income&Expense.swift"; sourceTree = "<group>"; };
 		9EDB440025D5ACA700F1932D /* SampleDataGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleDataGenerator.swift; sourceTree = "<group>"; };
@@ -98,6 +104,14 @@
 			name = ViewModels;
 			sourceTree = "<group>";
 		};
+		9E2FF8B325D865DE00D89F8E /* Helper Views */ = {
+			isa = PBXGroup;
+			children = (
+				9E2FF8B425D8660100D89F8E /* PrimaryButtonStyle.swift */,
+			);
+			name = "Helper Views";
+			sourceTree = "<group>";
+		};
 		9E9C49E125D5212500D685F4 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -123,7 +137,9 @@
 		9E9C49EB25D52B1500D685F4 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				9E9C49F025D52B5300D685F4 /* Date+.swift */,
+				9E9C49F025D52B5300D685F4 /* Date + Extensions.swift */,
+				9E2FF8AF25D8653800D89F8E /* View + Extensions.swift */,
+				9E2FF8B825D8666900D89F8E /* Image + Extensions.swift */,
 			);
 			name = Extensions;
 			sourceTree = "<group>";
@@ -174,6 +190,7 @@
 				9EDB440925D5AD6700F1932D /* Models */,
 				9E056BDD25D6CC4A00304775 /* ViewModels */,
 				9E9C49E125D5212500D685F4 /* Views */,
+				9E2FF8B325D865DE00D89F8E /* Helper Views */,
 				9E9C49EB25D52B1500D685F4 /* Extensions */,
 				9EE439F225D3E61B003E8882 /* FinanceTracker.xcdatamodeld */,
 				9EE439FD25D3E65D003E8882 /* Supporting Files */,
@@ -315,14 +332,17 @@
 				9EE0D62425D840610036BCE4 /* WalletDetailView.swift in Sources */,
 				9E9C49F925D5349500D685F4 /* Income&Expense.swift in Sources */,
 				9EDB440725D5AD5E00F1932D /* IconColor.swift in Sources */,
+				9E2FF8B925D8666900D89F8E /* Image + Extensions.swift in Sources */,
 				9E056BDA25D6CC4100304775 /* WalletActionViewModel.swift in Sources */,
 				9EE439E825D3E619003E8882 /* FinanceTrackerApp.swift in Sources */,
 				9E9C49F625D533AB00D685F4 /* WalletType.swift in Sources */,
+				9E2FF8B025D8653800D89F8E /* View + Extensions.swift in Sources */,
 				9EE0D62825D840770036BCE4 /* WalletDetailViewModel.swift in Sources */,
 				9E6A761F25D667E100B85E87 /* DataManager.swift in Sources */,
-				9E9C49F125D52B5300D685F4 /* Date+.swift in Sources */,
+				9E9C49F125D52B5300D685F4 /* Date + Extensions.swift in Sources */,
 				9E9C49E325D5213C00D685F4 /* WalletListView.swift in Sources */,
 				9E056BE125D6DEE800304775 /* WalletListViewModel.swift in Sources */,
+				9E2FF8B525D8660100D89F8E /* PrimaryButtonStyle.swift in Sources */,
 				9EE439F425D3E61B003E8882 /* FinanceTracker.xcdatamodeld in Sources */,
 				9EDB443B25D5BF9300F1932D /* WalletModel.swift in Sources */,
 				9EDB440425D5AD3900F1932D /* WalletIcon.swift in Sources */,

@@ -1,5 +1,5 @@
 //
-//  Date+.swift
+//  Date + Extensions.swift
 //  FinanceTracker
 //
 //  Created by Sebastian Staszczyk on 11/02/2021.

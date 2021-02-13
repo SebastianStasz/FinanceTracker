@@ -12,45 +12,115 @@ struct WalletListView: View {
     
     @ObservedObject var walletListVM: WalletListViewModel
     
-    @State private var isActionWalletSheetPresented = false
+    @State private var isCreatingWalletSheetPresented = false
     
     // MARK: -- Main View
     
     var body: some View {
-        NavigationView {
-            VStack {
-             
-                List {
-                    ForEach(walletListVM.wallets, id: \.id) { wallet in
-                        let editWalletVM = WalletActionViewModel(dataManager: dataManager, wallet: wallet)
-                        
-                        NavigationLink(destination: WalletDetailView(walletDetailVM: WalletDetailViewModel(for: wallet), editWalletVM: editWalletVM)) {
-                            HStack {
-                                Text(wallet.name)
-                                Text(String(wallet.totalBalance))
-                            }
-                        }
-                    }
-                }
-            }
-            .navigationTitle("Wallets")
-            .navigationBarItems(trailing: addWalletButton)
+        VStack {
+            if !walletListVM.wallets.isEmpty { walletList }
+            else { createWalletInfo }
         }
-        .sheet(isPresented: $isActionWalletSheetPresented, content: {
+        .navigationTitle("Wallets")
+        .navigationBarItems(trailing: addWalletTrailingButton)
+        .embedInNavigationView()
+        
+        .sheet(isPresented: $isCreatingWalletSheetPresented, content: {
             WalletActionView(walletActionVM: WalletActionViewModel(dataManager: dataManager))
         })
     }
     
     // MARK: -- View Components
     
-    var addWalletButton: some View {
-        Button("Add Wallet", action: showActionWalletSheet)
+    var walletList: some View {
+        ScrollView {
+            VStack(spacing: listRowSpacing) {
+                Divider()
+                
+                ForEach(walletListVM.wallets, id: \.self) { wallet in
+                    let editWalletVM = WalletActionViewModel(dataManager: dataManager, wallet: wallet)
+                    let destination = WalletDetailView(walletDetailVM: WalletDetailViewModel(for: wallet), editWalletVM: editWalletVM)
+                    
+                    NavigationLink(destination: destination) {
+                        WalletCardView(wallet: wallet)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    Divider()
+                }
+            }
+        }
     }
+    
+    var createWalletInfo: some View {
+        VStack {
+            Text(noWalletsMessage)
+                .multilineTextAlignment(.center)
+                .padding()
+            
+            Button("Create your first wallet", action: showCreatingWalletSheet)
+                .buttonStyle(PrimaryButtonStyle())
+        }
+    }
+    
+    var addWalletTrailingButton: some View {
+        Button("Add Wallet", action: showCreatingWalletSheet)
+    }
+    
+    let listRowSpacing: CGFloat = 15
+    let noWalletsMessage = "It looks like you do not have any wallets yet. Simple create one using this button."
     
     // MARK: -- Intents
     
-    func showActionWalletSheet() {
-        isActionWalletSheetPresented = true
+    func showCreatingWalletSheet() {
+        isCreatingWalletSheetPresented = true
+    }
+}
+
+// MARK: -- Wallet Card View
+
+struct WalletCardView: View {
+    let name, image, type, balance: String
+    let imageColor: Color
+    
+    // MARK: Main View
+    
+    var body: some View {
+        HStack(spacing: 25) {
+            Image(systemName: image)
+                .customize(width: 30, color: imageColor)
+            walletInfo
+        }.padding(.horizontal, 15)
+        
+        Divider()
+    }
+    
+    // MARK: View Components
+    
+    var walletInfo: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            HStack {
+                Text(name).font(.headline).bold()
+                Spacer()
+                Text(type).font(.caption)
+            }
+            HStack {
+                Text("Available balance:")
+                Text("\(balance) PLN").foregroundColor(.green)
+            }
+            .font(.subheadline)
+        }
+    }
+}
+
+extension WalletCardView {
+    init(wallet: Wallet) {
+        name = wallet.name
+        type = wallet.type.name
+        balance = wallet.totalBalance
+        image = wallet.icon.rawValue
+        imageColor = wallet.iconColor.color
     }
 }
 
