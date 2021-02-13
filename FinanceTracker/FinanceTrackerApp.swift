@@ -12,7 +12,6 @@ struct FinanceTrackerApp: App {
     private let persistence: PersistenceController
     
     @StateObject private var dataManager: DataManager
-    @StateObject private var walletListVM: WalletListViewModel
 
     init() {
         // MARK: Real
@@ -23,14 +22,11 @@ struct FinanceTrackerApp: App {
         
         let dataManager = DataManager(context: persistence.context)
         self._dataManager = StateObject(wrappedValue: dataManager)
-        
-        let walletListVM = WalletListViewModel(dataManager: dataManager)
-        self._walletListVM = StateObject(wrappedValue: walletListVM)
     }
     
     var body: some Scene {
         WindowGroup {
-            WalletListView(walletListVM: walletListVM)
+            TabBarView(dataManager: dataManager)
                 .environmentObject(dataManager)
         }
     }
