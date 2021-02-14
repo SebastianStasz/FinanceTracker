@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-enum IconColor: String {
+enum IconColor: String, CaseIterable {
     case red = "red"
     case orange = "orange"
     case yellow = "yellow"
@@ -34,4 +34,8 @@ enum IconColor: String {
         case .gray: return Color(red: 128/255, green: 128/255, blue: 128/255)
         }
     }
+}
+
+extension IconColor: Identifiable {
+    var id: IconColor { self }
 }

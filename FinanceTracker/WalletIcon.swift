@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum WalletIcon: String {
+enum WalletIcon: String, CaseIterable {
     case bag = "bag"
     case bagFill = "bag.fill"
     case bagCircle = "bag.circle"
@@ -18,4 +18,8 @@ enum WalletIcon: String {
     case creditcardFill = "creditcard.fill"
     case banknote = "banknote"
     case banknoteFill = "banknote.fill"
+}
+
+extension WalletIcon: Identifiable {
+    var id: WalletIcon { self }
 }

@@ -82,12 +82,5 @@ extension Wallet {
             return nil
         }
     }
-    
-    func update(_ wallet: Wallet, with updatedInfo: WalletModel) {
-        wallet.name = updatedInfo.name
-        wallet.type = updatedInfo.type
-        wallet.icon = updatedInfo.icon
-        wallet.iconColor = updatedInfo.iconColor
-    }
 }
 

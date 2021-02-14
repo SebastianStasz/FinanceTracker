@@ -31,6 +31,16 @@ class DataManager: ObservableObject {
         return operation == .succes ? .created : .failed
     }
     
+    func updateWallet(_ wallet: Wallet, from newWalletInfo: WalletModel) -> UpdatingWalletCheck {
+        wallet.name = newWalletInfo.name
+        wallet.type = newWalletInfo.type
+        wallet.icon = newWalletInfo.icon
+        wallet.iconColor = newWalletInfo.iconColor
+        
+        let operation = save()
+        return operation == .succes ? .updated : .failed
+    }
+    
     // MARK: -- Helper Functions
     
     enum SavingCheck {
