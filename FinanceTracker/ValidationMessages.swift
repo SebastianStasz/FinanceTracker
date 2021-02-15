@@ -27,6 +27,7 @@ enum WalletTypeCheck {
 enum NameCheck {
     case valid
     case invalid
+    case inUse
     case toShort
     case toLong
     case containsSpecialCharacters
@@ -37,6 +38,8 @@ enum NameCheck {
             return ""
         case .invalid:
             return "Name is incorrect."
+        case .inUse:
+            return "This name is already in use."
         case .toShort:
             return "Name must have at least 3 characters."
         case .toLong:

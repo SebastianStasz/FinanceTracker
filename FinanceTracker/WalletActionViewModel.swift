@@ -13,13 +13,19 @@ class WalletActionViewModel: NSObject, ObservableObject {
     
     private var cancellableSet: Set<AnyCancellable> = []
     private let walletTypesController: NSFetchedResultsController<WalletType>
-    private let validationManager = ValidationManager()
+    private let validationManager: ValidationManager
     private let dataManager: DataManager
     private let walletToEdit: Wallet?
     
     @Published private(set) var type: WalletType?
     @Published private(set) var isFormValid = false
-    @Published private(set) var walletTypes = [WalletType]()
+    
+    @Published private(set) var walletTypes = [WalletType]() {
+        didSet {
+            print("Sending names")
+            validationManager.namesInUse = walletTypes.map { $0.name }
+        }
+    }
 
     @Published var icon = WalletIcon.creditcardFill
     @Published var iconColor = IconColor.purple
@@ -43,8 +49,12 @@ class WalletActionViewModel: NSObject, ObservableObject {
     
     // MARK: -- Initializer
     
-    init(dataManager: DataManager, wallet: Wallet? = nil) {
-        self.dataManager = dataManager
+    init(context: NSManagedObjectContext, wallet: Wallet? = nil) {
+        print("WalletActionViewModel - init")
+        
+        self.dataManager = DataManager(context: context)
+        self.validationManager = ValidationManager()
+        
         walletToEdit = wallet
         walletTypesController = NSFetchedResultsController(fetchRequest: WalletType.fetchAll,
                                                            managedObjectContext: dataManager.context,

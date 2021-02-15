@@ -9,15 +9,15 @@ import Foundation
 import CoreData
 
 class WalletListViewModel: NSObject, ObservableObject {
-    private var dataManager: DataManager
     private var context: NSManagedObjectContext
     private var walletsController: NSFetchedResultsController<Wallet>
     
     @Published private(set) var wallets = [Wallet]()
     
-    init(dataManager: DataManager) {
-        self.dataManager = dataManager
-        self.context = dataManager.context
+    init(context: NSManagedObjectContext) {
+        print("WalletListViewModel - init")
+        
+        self.context = context
         
         walletsController = NSFetchedResultsController(fetchRequest: Wallet.fetchAll,
                                                        managedObjectContext: context,

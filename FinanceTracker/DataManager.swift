@@ -8,12 +8,32 @@
 import Foundation
 import CoreData
 
-class DataManager: ObservableObject {
+struct DataManager {
     private(set) var context: NSManagedObjectContext
     
     init(context: NSManagedObjectContext) {
         self.context = context
     }
+    
+    func delete(_ object: NSManagedObject) -> SavingCheck {
+        context.delete(object)
+        return save()
+    }
+    
+    func fetch<O: NSManagedObject>(sortDescriptors: [NSSortDescriptor]) -> [O] {
+        let fetchRequest: NSFetchRequest<O> = O.fetchRequest() as! NSFetchRequest<O>
+        fetchRequest.predicate = nil
+        fetchRequest.sortDescriptors = sortDescriptors
+        do {
+            let items = try context.fetch(fetchRequest)
+            return items
+        }
+        catch let error as NSError {
+            print("Error getting \(O.Type.self): \(error.localizedDescription), \(error.userInfo)")
+        }
+        return [O]()
+    }
+    
     
     // MARK: -- Wallet
     
@@ -41,6 +61,19 @@ class DataManager: ObservableObject {
         return operation == .succes ? .updated : .failed
     }
     
+    // MARK: -- Grouping Entity
+    
+    func createGroupingEntity<O: GroupingEntity>(_ object: O.Type, name: String) {
+        let object = O(context: context)
+        object.name = name
+        let _ = save()
+    }
+    
+    func updateGroupingEntity(_ object: GroupingEntity, name: String) {
+        object.name = name
+        let _ = save()
+    }
+    
     // MARK: -- Helper Functions
     
     enum SavingCheck {
@@ -49,11 +82,11 @@ class DataManager: ObservableObject {
         case noChanges
     }
     
-    private func save() -> SavingCheck {
+    func save() -> SavingCheck {
         if context.hasChanges {
             do {
                 try context.save()
-                print("saving context")
+//                print("saving context")
                 return .succes
             } catch {
                 print("error when saving context: \(error)")
@@ -62,11 +95,5 @@ class DataManager: ObservableObject {
         }
         
         return .noChanges
-    }
-    
-    private func delete(_ object: NSManagedObject) -> SavingCheck {
-        print("deleting: \(object.entity)")
-        context.delete(object)
-        return save()
     }
 }

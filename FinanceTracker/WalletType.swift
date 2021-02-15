@@ -8,11 +8,19 @@
 import Foundation
 import CoreData
 
-extension WalletType {
+extension WalletType: GroupingEntity {
     
     var name: String {
         get { name_! } // shouldn't fail (force unwrap until app release)
         set { name_ = newValue }
+    }
+    
+    var asignedObjects: NSSet? {
+        get { wallets }
+    }
+
+    static var orderByName: NSSortDescriptor {
+        NSSortDescriptor(keyPath: \WalletType.name_, ascending: true)
     }
     
     static var fetchAll: NSFetchRequest<WalletType> {
@@ -21,5 +29,9 @@ extension WalletType {
         request.predicate = nil
         
         return request
+    }
+    
+    static var entityType: String {
+        "type"
     }
 }

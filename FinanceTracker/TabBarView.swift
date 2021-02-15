@@ -6,21 +6,15 @@
 //
 
 import SwiftUI
-
-// MARK: -- Tab Bar View
+import CoreData
 
 struct TabBarView: View {
-
+    
+    @Environment(\.managedObjectContext) private var context
+    
     @StateObject private var walletListVM: WalletListViewModel
     
     @State var selectedTab = TabViews.TabView1
-    
-    init(dataManager: DataManager) {
-        UITabBar.appearance().isHidden = true
-        
-        let walletListVM = WalletListViewModel(dataManager: dataManager)
-        self._walletListVM = StateObject(wrappedValue: walletListVM)
-    }
     
     // MARK: -- Main View
     
@@ -28,7 +22,7 @@ struct TabBarView: View {
         VStack(spacing: 0) {
             TabView(selection: $selectedTab) {
                 
-                WalletListView(walletListVM: walletListVM)
+                WalletListView(viewModel: walletListVM, context: context)
                     .tag(TabViews.TabView1)
                 
                 Text("TEST")
@@ -97,6 +91,18 @@ struct TabBarView: View {
     }
 }
 
+extension TabBarView {
+    
+    init(context: NSManagedObjectContext) {
+        print("TabBarView - init")
+        
+        let walletListVM = WalletListViewModel(context: context)
+        _walletListVM = StateObject(wrappedValue: walletListVM)
+        
+        UITabBar.appearance().isHidden = true
+    }
+}
+
 // MARK: -- Tab Bar Button
 
 struct TabBarButton: View {
@@ -136,11 +142,8 @@ struct TabBarButton: View {
 
 // MARK: -- Preview
 
-struct TabBarView_Previews: PreviewProvider {
-    static var previews: some View {
-        let persistence = PersistenceController.preview
-        let dataManager = DataManager(context: persistence.context)
-        
-        TabBarView(dataManager: dataManager)
-    }
-}
+//struct TabBarView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        TabBarView(context: context)
+//    }
+//}

@@ -13,21 +13,26 @@ class ValidationManager: ObservableObject {
     private var cancellableSet: Set<AnyCancellable> = []
     private let validation = ValidationService()
     
+    var namesInUse = [String]()
+    
     @Published var name = ""
     @Published var amount = ""
     
     @Published private(set) var nameMessage = ""
     @Published private(set) var amountMessage = ""
     
+    init() {
+        initCombine()
+    }
+    
     // MARK: -- Validations
     
     var isNameValid: AnyPublisher<NameCheck, Never> {
         $name
-            .debounce(for: 0.5, scheduler: RunLoop.main)
+//            .debounce(for: 0.3, scheduler: RunLoop.main)
             .removeDuplicates()
             .map {
-                print("test")
-                return self.validation.validateName($0)
+                return self.validation.validateName($0, namesInUse: self.namesInUse)
             }
             .eraseToAnyPublisher()
     }
@@ -40,7 +45,7 @@ class ValidationManager: ObservableObject {
     
     // MARK: -- Validation Initializer
     
-    init() {
+    func initCombine() {
         isNameValid
             .dropFirst()
             .receive(on: RunLoop.main)
@@ -48,6 +53,8 @@ class ValidationManager: ObservableObject {
                 switch nameCheck {
                 case .containsSpecialCharacters:
                     return NameCheck.containsSpecialCharacters.message
+                case.inUse:
+                    return NameCheck.inUse.message
                 case .toLong:
                     return NameCheck.toLong.message
                 case .toShort:

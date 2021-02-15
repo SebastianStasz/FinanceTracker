@@ -12,14 +12,6 @@ struct WalletActionView: View {
     
     @StateObject var walletActionVM: WalletActionViewModel
     
-    private var navigationTitle: String {
-        walletActionVM.isEditingMode ? "Editing Wallet" : "Creating Wallet"
-    }
-    
-    private var actionButtonLabelText: String {
-        walletActionVM.isEditingMode ? "Save Changes" : "Create Wallet"
-    }
-    
     // MARK: -- Main View
     
     var body: some View {
@@ -111,6 +103,14 @@ struct WalletActionView: View {
             .tag(iconColor)
     }
     
+    private var navigationTitle: String {
+        walletActionVM.isEditingMode ? "Editing Wallet" : "Creating Wallet"
+    }
+    
+    private var actionButtonLabelText: String {
+        walletActionVM.isEditingMode ? "Save Changes" : "Create Wallet"
+    }
+    
     let fieldsSpacing: CGFloat = 5
     let labelFont: Font = .headline
     
@@ -129,5 +129,14 @@ struct WalletActionView: View {
     
     func showWalletTypesEditView() {
         
+    }
+}
+
+extension WalletActionView {
+    
+    init(viewModel: WalletActionViewModel) {
+        print("WalletActionView - init")
+        
+        self._walletActionVM = StateObject(wrappedValue: viewModel)
     }
 }

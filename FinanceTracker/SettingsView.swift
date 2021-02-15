@@ -8,17 +8,34 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @Environment(\.managedObjectContext) private var context
+    
+    init() {
+        print("SettingsView - init")
+    }
     
     // MARK: -- Main View
     
     var body: some View {
         List {
-            Text("Settings 1")
-            Text("Settings 2")
-            Text("Settings 3")
+            
+            NavigationLink(destination: GroupingEntityListView<WalletType>(context: context)) {
+                Text("Wallet Types")
+            }
+            
+            NavigationLink(destination: GroupingEntityListView<IncomeCategory>(context: context)) {
+                Text("Income Categories")
+            }
+            
+            NavigationLink(destination: GroupingEntityListView<ExpenseCategory>(context: context)) {
+                Text("Expense Categories")
+            }
         }
+        .navigationTitle("Settings")
+        .embedInNavigationView()
     }
 }
+
 
 // MARK: -- Preview
 

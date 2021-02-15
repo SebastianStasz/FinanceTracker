@@ -6,12 +6,13 @@
 //
 
 import SwiftUI
+import CoreData
 
 @main
 struct FinanceTrackerApp: App {
-    private let persistence: PersistenceController
     
-    @StateObject private var dataManager: DataManager
+    private let persistence: PersistenceController
+    private var context: NSManagedObjectContext
 
     init() {
         // MARK: Real
@@ -19,15 +20,13 @@ struct FinanceTrackerApp: App {
         
         // MARK: Preview
         self.persistence = PersistenceController.preview
-        
-        let dataManager = DataManager(context: persistence.context)
-        self._dataManager = StateObject(wrappedValue: dataManager)
+        self.context = persistence.context
     }
     
     var body: some Scene {
         WindowGroup {
-            TabBarView(dataManager: dataManager)
-                .environmentObject(dataManager)
+            TabBarView(context: context)
+                .environment(\.managedObjectContext, context)
         }
     }
 }

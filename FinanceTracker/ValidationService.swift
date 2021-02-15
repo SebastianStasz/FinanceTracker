@@ -9,8 +9,13 @@ import Foundation
 
 struct ValidationService {
     
-    func validateName(_ name: String?) -> NameCheck {
+    func validateName(_ name: String?, namesInUse: [String]) -> NameCheck {
         if let name = name {
+            
+            if namesInUse.contains(name) {
+                return .inUse
+            }
+            
             let nameToValidate = name.removeAllSpaces()
             
             if nameToValidate.containSpecialCharacter {

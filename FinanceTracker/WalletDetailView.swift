@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct WalletDetailView: View {
+    @Environment(\.managedObjectContext) private var context
     
-    @ObservedObject var walletDetailVM: WalletDetailViewModel
-    @ObservedObject var editWalletVM: WalletActionViewModel
+    @ObservedObject private var walletDetailVM: WalletDetailViewModel
     
     @State private var isEditingWalletSheetPresented = false
     
@@ -24,7 +25,9 @@ struct WalletDetailView: View {
         .navigationBarItems(trailing: editWalletButton)
         
         .sheet(isPresented: $isEditingWalletSheetPresented) {
-            WalletActionView(walletActionVM: editWalletVM)
+            let walletActionVM = WalletActionViewModel(context: context, wallet: walletDetailVM.wallet)
+            
+            WalletActionView(viewModel: walletActionVM)
         }
     }
     
@@ -41,3 +44,11 @@ struct WalletDetailView: View {
     }
 }
 
+extension WalletDetailView {
+    
+    init(viewModel: WalletDetailViewModel) {
+        print("WalletDetialView - init")
+        
+        walletDetailVM = viewModel
+    }
+}

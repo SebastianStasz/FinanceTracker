@@ -8,12 +8,13 @@
 import Foundation
 
 class WalletDetailViewModel: ObservableObject {
-    private let wallet: Wallet
+    var wallet: Wallet?
     
-    var name: String { wallet.name }
-    var balance: String { wallet.totalBalance }
+    var name: String { wallet?.name ?? ""}
+    var balance: String { wallet?.totalBalance ?? ""}
     
-    init(for wallet: Wallet) {
+    init(for wallet: Wallet? = nil) {
+        print("WalletDetailViewModel - init")
         self.wallet = wallet
     }
 }

@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct WalletListView: View {
-    @EnvironmentObject private var dataManager: DataManager
     
     @ObservedObject var walletListVM: WalletListViewModel
+    
+    @StateObject var creatingWalletVM: WalletActionViewModel
     
     @State private var isCreatingWalletSheetPresented = false
     
@@ -26,7 +28,7 @@ struct WalletListView: View {
         .embedInNavigationView()
         
         .sheet(isPresented: $isCreatingWalletSheetPresented, content: {
-            WalletActionView(walletActionVM: WalletActionViewModel(dataManager: dataManager))
+            WalletActionView(viewModel: creatingWalletVM)
         })
     }
     
@@ -38,10 +40,9 @@ struct WalletListView: View {
                 Divider()
                 
                 ForEach(walletListVM.wallets, id: \.self) { wallet in
-                    let editWalletVM = WalletActionViewModel(dataManager: dataManager, wallet: wallet)
-                    let destination = WalletDetailView(walletDetailVM: WalletDetailViewModel(for: wallet), editWalletVM: editWalletVM)
+                    let walletDetailVM = WalletDetailViewModel(for: wallet)
                     
-                    NavigationLink(destination: destination) {
+                    NavigationLink(destination: WalletDetailView(viewModel: walletDetailVM)) {
                         WalletCardView(wallet: wallet)
                             .contentShape(Rectangle())
                     }
@@ -75,6 +76,18 @@ struct WalletListView: View {
     
     func showCreatingWalletSheet() {
         isCreatingWalletSheetPresented = true
+    }
+}
+
+extension WalletListView {
+    
+    init(viewModel: WalletListViewModel, context: NSManagedObjectContext) {
+        print("WalletListView - init")
+        
+        walletListVM = viewModel
+        
+        let creatingWalletVM = WalletActionViewModel(context: context)
+        _creatingWalletVM = StateObject(wrappedValue: creatingWalletVM)
     }
 }
 
@@ -127,12 +140,12 @@ extension WalletCardView {
 
 // MARK: -- Preview
 
-struct WalletListView_Previews: PreviewProvider {
-    static var previews: some View {
-        let persistence = PersistenceController.preview
-        let dataManager = DataManager(context: persistence.context)
-        let walletListVM = WalletListViewModel(dataManager: dataManager)
-
-        WalletListView(walletListVM: walletListVM)
-    }
-}
+//struct WalletListView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        let persistence = PersistenceController.preview
+//        let context = persistence.context
+//        let walletListVM = WalletListViewModel(context: context)
+//
+//        WalletListView(walletListVM: walletListVM, context: context)
+//    }
+//}
