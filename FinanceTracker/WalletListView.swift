@@ -9,12 +9,15 @@ import SwiftUI
 import CoreData
 
 struct WalletListView: View {
+    @Environment(\.managedObjectContext) var context
     
-    @ObservedObject var walletListVM: WalletListViewModel
+    @ObservedObject private var walletListVM: WalletListViewModel
     
-    @StateObject var creatingWalletVM: WalletActionViewModel
+    @StateObject private var creatingWalletVM: WalletActionViewModel
+    @StateObject private var walletDetailVM: WalletDetailViewModel
     
     @State private var isCreatingWalletSheetPresented = false
+    @State private var isDetailViewPresented = false
     
     // MARK: -- Main View
     
@@ -40,9 +43,10 @@ struct WalletListView: View {
                 Divider()
                 
                 ForEach(walletListVM.wallets, id: \.self) { wallet in
-                    let walletDetailVM = WalletDetailViewModel(for: wallet)
-                    
-                    NavigationLink(destination: WalletDetailView(viewModel: walletDetailVM)) {
+            
+                    NavigationLink(destination: WalletDetailView(viewModel: walletDetailVM,
+                                                                 for: wallet,
+                                                                 dataManager: DataManager(context: context))) {
                         WalletCardView(wallet: wallet)
                             .contentShape(Rectangle())
                     }
@@ -88,6 +92,8 @@ extension WalletListView {
         
         let creatingWalletVM = WalletActionViewModel(context: context)
         _creatingWalletVM = StateObject(wrappedValue: creatingWalletVM)
+        
+        _walletDetailVM = StateObject(wrappedValue: WalletDetailViewModel())
     }
 }
 

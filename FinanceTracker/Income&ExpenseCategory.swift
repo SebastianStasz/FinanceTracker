@@ -5,16 +5,7 @@
 //  Created by Sebastian Staszczyk on 14/02/2021.
 //
 
-import Foundation
 import CoreData
-
-
-protocol GroupingEntity: NSManagedObject {
-    var name: String { get set }
-    var asignedObjects: NSSet? { get }
-    static var orderByName: NSSortDescriptor { get }
-    static var entityType: String { get }
-}
 
 // MARK: -- Income Category
 

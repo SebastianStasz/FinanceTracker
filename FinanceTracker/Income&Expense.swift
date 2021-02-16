@@ -5,27 +5,59 @@
 //  Created by Sebastian Staszczyk on 11/02/2021.
 //
 
-import Foundation
+import CoreData
 
-extension Income {
+extension Income: CashFlow {
     
-    var value: String {
+    var category: GroupingEntity {
+        category_! // shouldn't fail (force unwrap until app release)
+    }
+    
+    var valueStr: String {
         String(value_)
     }
     
-    var date: String {
+    var value: Double {
+        value_
+    }
+    
+    var dateStr: String {
         date_!.toMediumDate() // shouldn't fail (force unwrap until app release)
+    }
+    
+    var date: Date {
+        date_! // shouldn't fail (force unwrap until app release)
+    }
+    
+    static var orderByDate: NSSortDescriptor {
+        NSSortDescriptor(keyPath: \Income.date_, ascending: false)
     }
 }
 
-extension Expense {
+extension Expense: CashFlow {
     
-    var value: String {
+    var category: GroupingEntity {
+        category_! // shouldn't fail (force unwrap until app release)
+    }
+    
+    var valueStr: String {
         String(value_)
     }
     
-    var date: String {
+    var value: Double {
+        value_
+    }
+    
+    var dateStr: String {
         date_!.toMediumDate() // shouldn't fail (force unwrap until app release)
+    }
+    
+    var date: Date {
+        date_! // shouldn't fail (force unwrap until app release)
+    }
+    
+    static var orderByDate: NSSortDescriptor {
+        NSSortDescriptor(keyPath: \Expense.date_, ascending: false)
     }
 }
 
