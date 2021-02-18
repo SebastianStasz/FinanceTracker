@@ -11,9 +11,9 @@ import CoreData
 struct GroupingEntityListView<O>: View where O: GroupingEntity, O: Identifiable {
     
     @Environment(\.presentationMode) private var presentationMode
-    @Environment(\.managedObjectContext) private var context
+    @EnvironmentObject var dataManager: DataManager
     
-    @ObservedObject private var geListVM: GroupingEntityListViewModel<O>
+    @StateObject private var geListVM: GroupingEntityListViewModel<O>
     
     @State private var editMode = EditMode.inactive
     @State private var isPopUpPresented = false
@@ -22,26 +22,33 @@ struct GroupingEntityListView<O>: View where O: GroupingEntity, O: Identifiable 
     
     private let initializeCreating: Bool
     
+    var isListEmpty: Bool {
+        geListVM.groupingEntities.isEmpty
+    }
+    
     // MARK: -- Main View
     
     var body: some View {
         GeometryReader { geo in
             ZStack {
                 
-                VStack(spacing: 0) { listWithObjects }
-                    .navigationTitle(navigationTitle)
-                    .navigationBarItems(trailing: editButton)
-                    .environment(\.editMode, $editMode)
+                VStack(spacing: 0) {
+                    if isListEmpty { emptyListInfo }
+                    else { listWithObjects }
+                }
+                .navigationTitle(categoryType.capitalized)
+                .navigationBarItems(trailing: editButton)
+                .environment(\.editMode, $editMode)
                 
                 Button(action: showCreatingPupUp) { PlusButtonLabel(btnSize: 60, btnIconSize: 28) }
                     .offset(x: geo.size.width / 2 - 60, y: geo.size.height / 2 - 60) // right-bottom corner
-                    .opacity(isPopUpPresented ? 0 : 1)
+                    .opacity(isPlusButtonShown ? 1 : 0)
 
                 if isPopUpPresented {
                     GroupingEntityPopUpView(isPresented: $isPopUpPresented,
                                             toEdit: selectedObject,
                                             namesInUse: geListVM.namesInUse,
-                                            dataManager: DataManager(context: context),
+                                            dataManager: dataManager,
                                             onDismiss: doWhenPopUpDismis)
                 }
             }
@@ -80,6 +87,7 @@ struct GroupingEntityListView<O>: View where O: GroupingEntity, O: Identifiable 
     
     var editButton: some View {
         EditButton().disabled(isPopUpPresented ? true : false)
+            .opacity(isListEmpty ? 0 : 1)
     }
     
     var cannotDeleteAlert: Alert {
@@ -88,13 +96,40 @@ struct GroupingEntityListView<O>: View where O: GroupingEntity, O: Identifiable 
               dismissButton: .default(Text("OK")))
     }
     
-    private var navigationTitle: String {
+    var emptyListInfo: some View {
+        VStack {
+            Spacer()
+            EmptyListInfoView(message: emptyListMessage, btnText: "Create \(emptyListBtnText)", btnAction: showCreatingPupUp)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    var isPlusButtonShown: Bool {
+        !isPopUpPresented && !isListEmpty
+    }
+    
+    var emptyListMessage: String {
+        "It looks like you do not have any \(categoryType) yet. Simple create one using this button."
+    }
+    
+    var emptyListBtnText: String {
         if O.self == WalletType.self {
-            return "Wallet Types"
+            return "wallet type"
         } else if O.self == IncomeCategory.self {
-            return "Income Categories"
+            return "income category"
         } else {
-            return "Expense Categories"
+            return "expense category"
+        }
+    }
+    
+    var categoryType: String {
+        if O.self == WalletType.self {
+            return "wallet types"
+        } else if O.self == IncomeCategory.self {
+            return "income categories"
+        } else {
+            return "expense categories"
         }
     }
     
@@ -134,11 +169,13 @@ struct GroupingEntityListView<O>: View where O: GroupingEntity, O: Identifiable 
 
 extension GroupingEntityListView {
     
-    init(initializeCreating: Bool = false, context: NSManagedObjectContext) {
+    init(initializeCreating: Bool = false, dataManager: DataManager) {
         print("GroupingEntityListView - init")
         
         self.initializeCreating = initializeCreating
-        geListVM = GroupingEntityListViewModel(dataManager: DataManager(context: context))
+        
+        let viewModel = GroupingEntityListViewModel<O>(dataManager: dataManager)
+        _geListVM = StateObject(wrappedValue: viewModel)
     }
 }
 
@@ -149,6 +186,6 @@ struct GroupingEntityListView_Previews: PreviewProvider {
         let persistence = PersistenceController.preview
         let context = persistence.context
         
-        GroupingEntityListView<WalletType>(context: context)
+        GroupingEntityListView<WalletType>(dataManager: DataManager(context: context))
     }
 }

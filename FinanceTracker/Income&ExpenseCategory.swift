@@ -9,7 +9,8 @@ import CoreData
 
 // MARK: -- Income Category
 
-extension IncomeCategory: GroupingEntity {
+extension IncomeCategory: GroupingEntity, CashFlowCategory {
+    
     var name: String {
         get { name_! } // shouldn't fail (force unwrap until app release)
         set { name_ = newValue }
@@ -28,9 +29,10 @@ extension IncomeCategory: GroupingEntity {
     }
 }
 
+
 // MARK: -- Expense Category
 
-extension ExpenseCategory: GroupingEntity {
+extension ExpenseCategory: GroupingEntity, CashFlowCategory {
     
     var name: String {
         get { name_! } // shouldn't fail (force unwrap until app release)

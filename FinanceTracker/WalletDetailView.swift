@@ -9,43 +9,82 @@ import SwiftUI
 import CoreData
 
 struct WalletDetailView: View {
-    @Environment(\.managedObjectContext) private var context
+    
+    @EnvironmentObject var dataManager: DataManager
     
     @ObservedObject private var walletDetailVM: WalletDetailViewModel
-    @ObservedObject private var incomeListVM: CashFlowListViewModel<Income>
-    @ObservedObject private var expenseListVM: CashFlowListViewModel<Expense>
-    
     @ObservedObject private var wallet: Wallet
     
-    @State private var isEditingWalletSheetPresented = false
+    @State private var incomeToEdit: Income?
+    @State private var expenseToEdit: Expense?
+    
+    @State private var presentedSheet: WalletDetailViewSheet?
+    @State private var presentedPopUp: WalletDetailViewPopUp = .none
     
     // MARK: -- Main View
     
     var body: some View {
         ZStack {
             
+            /// Main
+
             VStack(alignment: .leading) {
                 
                 walletDetailViewHeader
                 
-                CashFlowListView(viewModel: incomeListVM)
+                CashFlowListView(for: wallet.id!, popUp: $presentedPopUp, cashFlowToEdit: $incomeToEdit, dataManager: dataManager)
                 
-                CashFlowListView(viewModel: expenseListVM)
+                CashFlowListView(for: wallet.id!, popUp: $presentedPopUp, cashFlowToEdit: $expenseToEdit, dataManager: dataManager)
                 
                 Spacer()
+            }
+            
+            /// PopUp
+            
+            if presentedPopUp == .income {
+                let incomesVM = CashFlowPopUpViewModel<Income, IncomeCategory>(toEdit: incomeToEdit, wallet: wallet, dataManager: dataManager)
+                
+                CashFlowPopUpView(viewModel: incomesVM , popUp: $presentedPopUp, categorySheet: showCreatingIncomeSheet)
+            }
+            
+            if presentedPopUp == .expense {
+                let expensesVM = CashFlowPopUpViewModel<Expense, ExpenseCategory>(toEdit: expenseToEdit, wallet: wallet, dataManager: dataManager)
+                
+                CashFlowPopUpView(viewModel: expensesVM, popUp: $presentedPopUp, categorySheet: showCreatingExpenseSheet)
             }
         }
         .padding(.top, mainViewTopPadding)
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarItems(trailing: editWalletButton)
         
-        .sheet(isPresented: $isEditingWalletSheetPresented) {
-            let walletActionVM = WalletActionViewModel(context: context, wallet: walletDetailVM.wallet)
-            
-            WalletActionView(viewModel: walletActionVM)
+        .sheet(item: $presentedSheet) { item in
+            switch item {
+            case .editWallet: editWalletSheet
+            case .addIncomeCategory: addIncomeCategorySheet
+            case .addExpenseCategory: addExpenseCategorySheet
+            }
         }
         
         .onAppear() { walletDetailVM.wallet = wallet }
+    }
+    
+    // MARK: -- View Components
+    
+    var addIncomeCategorySheet: some View {
+        GroupingEntityListView<IncomeCategory>(initializeCreating: true, dataManager: dataManager)
+    }
+    
+    var addExpenseCategorySheet: some View {
+        GroupingEntityListView<ExpenseCategory>(initializeCreating: true, dataManager: dataManager)
+    }
+    
+    var editWalletSheet: some View {
+        let walletActionVM = WalletActionViewModel(dataManager: dataManager, wallet: walletDetailVM.wallet)
+        return WalletActionView(viewModel: walletActionVM)
+    }
+    
+    var editWalletButton: some View {
+        Button("Edit Wallet", action: showEditingSheet)
     }
     
     var walletDetailViewHeader: some View {
@@ -71,34 +110,53 @@ struct WalletDetailView: View {
     let iconHorizontalPadding: CGFloat = 25
     let mainViewTopPadding: CGFloat = 20
     
-    
-    // MARK: -- View Components
-    
-    var editWalletButton: some View {
-        Button("Edit Wallet", action: showEditingSheet)
-    }
-    
     // MARK: -- Intents
     
     func showEditingSheet() {
-        isEditingWalletSheetPresented = true
+        presentedSheet = .editWallet
+    }
+    
+    func showCreatingIncomeSheet() {
+        presentedSheet = .addIncomeCategory
+    }
+    
+    func showCreatingExpenseSheet() {
+        presentedSheet = .addExpenseCategory
     }
 }
 
+
+// MARK: -- Initializer
+
 extension WalletDetailView {
     
-    init(viewModel: WalletDetailViewModel, for wallet: Wallet, dataManager: DataManager) {
+    init(viewModel: WalletDetailViewModel, for wallet: Wallet) {
         print("WalletDetialView - init")
         
         self.wallet = wallet
+
         walletDetailVM = viewModel
-        
-        incomeListVM = CashFlowListViewModel<Income>(for: wallet.id!, dataManager: dataManager)
-        
-        expenseListVM = CashFlowListViewModel<Expense>(for: wallet.id!, dataManager: dataManager)
     }
     
 }
+
+
+// MARK: -- Sheet Controller
+
+enum WalletDetailViewSheet: Int, Identifiable {
+    case editWallet
+    case addIncomeCategory
+    case addExpenseCategory
+    
+    var id: Int { rawValue }
+}
+
+enum WalletDetailViewPopUp {
+    case none
+    case income
+    case expense
+}
+
 
 // MARK: -- Preview
 
@@ -106,11 +164,10 @@ struct WalletDetailView_Previews: PreviewProvider {
     static var previews: some View {
         let persistence = PersistenceController.empty
         let context = persistence.context
-        let dataManager = DataManager(context: context)
         let wallets = generateSampleData(context: context)
         
         let walletDetailVM = WalletDetailViewModel()
 
-        WalletDetailView(viewModel: walletDetailVM, for: wallets[0], dataManager: dataManager)
+        WalletDetailView(viewModel: walletDetailVM, for: wallets[0])
     }
 }

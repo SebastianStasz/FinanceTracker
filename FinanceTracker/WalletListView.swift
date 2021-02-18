@@ -9,11 +9,10 @@ import SwiftUI
 import CoreData
 
 struct WalletListView: View {
-    @Environment(\.managedObjectContext) var context
+    @EnvironmentObject var dataManager: DataManager
     
     @ObservedObject private var walletListVM: WalletListViewModel
     
-    @StateObject private var creatingWalletVM: WalletActionViewModel
     @StateObject private var walletDetailVM: WalletDetailViewModel
     
     @State private var isCreatingWalletSheetPresented = false
@@ -27,10 +26,11 @@ struct WalletListView: View {
             else { createWalletInfo }
         }
         .navigationTitle("Wallets")
-        .navigationBarItems(trailing: addWalletTrailingButton)
-        .embedInNavigationView()
+        .toolbar { addWalletTrailingButton }
         
         .sheet(isPresented: $isCreatingWalletSheetPresented, content: {
+            let creatingWalletVM = WalletActionViewModel(dataManager: dataManager)
+            
             WalletActionView(viewModel: creatingWalletVM)
         })
     }
@@ -45,8 +45,7 @@ struct WalletListView: View {
                 ForEach(walletListVM.wallets, id: \.self) { wallet in
             
                     NavigationLink(destination: WalletDetailView(viewModel: walletDetailVM,
-                                                                 for: wallet,
-                                                                 dataManager: DataManager(context: context))) {
+                                                                 for: wallet)) {
                         WalletCardView(wallet: wallet)
                             .contentShape(Rectangle())
                     }
@@ -59,14 +58,7 @@ struct WalletListView: View {
     }
     
     var createWalletInfo: some View {
-        VStack {
-            Text(noWalletsMessage)
-                .multilineTextAlignment(.center)
-                .padding()
-            
-            Button("Create your first wallet", action: showCreatingWalletSheet)
-                .buttonStyle(PrimaryButtonStyle())
-        }
+        EmptyListInfoView(message: noWalletsMessage, btnText: "Create wallet", btnAction: showCreatingWalletSheet)
     }
     
     var addWalletTrailingButton: some View {
@@ -85,13 +77,10 @@ struct WalletListView: View {
 
 extension WalletListView {
     
-    init(viewModel: WalletListViewModel, context: NSManagedObjectContext) {
+    init(viewModel: WalletListViewModel) {
         print("WalletListView - init")
         
         walletListVM = viewModel
-        
-        let creatingWalletVM = WalletActionViewModel(context: context)
-        _creatingWalletVM = StateObject(wrappedValue: creatingWalletVM)
         
         _walletDetailVM = StateObject(wrappedValue: WalletDetailViewModel())
     }

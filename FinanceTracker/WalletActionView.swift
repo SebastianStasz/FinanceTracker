@@ -8,27 +8,37 @@
 import SwiftUI
 
 struct WalletActionView: View {
-    @Environment(\.presentationMode) var presentationMode
     
-    @StateObject var walletActionVM: WalletActionViewModel
+    @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var dataManager: DataManager
+    
+    @StateObject private var walletActionVM: WalletActionViewModel
+    
+    @State private var isCreatingWalletTypeSheetPresented = false
     
     // MARK: -- Main View
     
     var body: some View {
         VStack(spacing: fieldsSpacing) {
-
-            creatingWalletForm
-//            .onTapGesture { hideKeyboard() }
+            
+            ScrollView{
+                creatingWalletForm
+            }
+            .onTapGesture { hideKeyboard() }
             
             Button(actionButtonLabelText, action: actionWallet)
-                .buttonStyle(PrimaryButtonStyle())
+                .buttonStyle(PrimaryButtonStyle(height: buttonHeight))
                 .disabled(!walletActionVM.isFormValid)
         }
+        .toolbar { cancelButton }
         .navigationTitle(navigationTitle)
-        .navigationBarItems(leading: cancelButton)
         .padding(.vertical, 15)
         .padding(.horizontal, 20)
         .embedInNavigationView()
+        
+        .sheet(isPresented: $isCreatingWalletTypeSheetPresented, onDismiss: { walletActionVM.updateTypeSelector() }) {
+            GroupingEntityListView<WalletType>(initializeCreating: true, dataManager: dataManager)
+        }
     }
     
     // MARK: -- Wallet Form
@@ -37,7 +47,7 @@ struct WalletActionView: View {
         VStack(alignment: .leading) {
             
             TextField("My Wallet", text: $walletActionVM.name)
-                .toLabelTextField(label: "Wallet name", errorMessage: walletActionVM.nameMessage)
+                .toLabelTextField(label: "Name", errorMessage: walletActionVM.nameMessage)
 
             TextField("100", text: $walletActionVM.balance)
                 .toLabelTextField(label: "Initial balance", errorMessage: walletActionVM.balanceMessage)
@@ -50,7 +60,7 @@ struct WalletActionView: View {
             Spacer()
             
             ForEach(WalletIcon.allCases, content: iconIndicator)
-                .embedInWheelPicker("Wallet icon", labelFont: labelFont, selection: $walletActionVM.icon)
+                .embedInWheelPicker("Icon", labelFont: labelFont, selection: $walletActionVM.icon)
             
             ForEach(IconColor.allCases, content: iconColorIndicator)
                 .embedInWheelPicker("Icon color", labelFont: labelFont, selection: $walletActionVM.iconColor)
@@ -65,7 +75,7 @@ struct WalletActionView: View {
         VStack(alignment: .leading) {
             HStack {
                 
-                Text("Wallet type")
+                Text("Type")
                     .font(labelFont)
                 
                 Picker(walletActionVM.type?.name ?? "--------", selection: $walletActionVM.typeSelector) {
@@ -111,6 +121,10 @@ struct WalletActionView: View {
         walletActionVM.isEditingMode ? "Save Changes" : "Create Wallet"
     }
     
+    private var buttonHeight: CGFloat {
+        walletActionVM.isKeyboardShown ? 40 : 60
+    }
+    
     let fieldsSpacing: CGFloat = 5
     let labelFont: Font = .headline
     
@@ -128,9 +142,12 @@ struct WalletActionView: View {
     }
     
     func showWalletTypesEditView() {
-        
+        isCreatingWalletTypeSheetPresented = true
     }
 }
+
+
+// MARK: -- Initializer
 
 extension WalletActionView {
     

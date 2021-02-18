@@ -11,14 +11,16 @@ import CoreData
 
 class WalletActionViewModel: NSObject, ObservableObject {
     
-    private var cancellableSet: Set<AnyCancellable> = []
     private let walletTypesController: NSFetchedResultsController<WalletType>
+    private var cancellableSet: Set<AnyCancellable> = []
     private let validationManager: ValidationManager
+    private var keyboardHelper: KeyboardHelper?
     private let dataManager: DataManager
     private let walletToEdit: Wallet?
     
     @Published private(set) var type: WalletType?
     @Published private(set) var isFormValid = false
+    @Published private(set) var isKeyboardShown = false
     
     @Published private(set) var walletTypes = [WalletType]() {
         didSet {
@@ -49,10 +51,10 @@ class WalletActionViewModel: NSObject, ObservableObject {
     
     // MARK: -- Initializer
     
-    init(context: NSManagedObjectContext, wallet: Wallet? = nil) {
+    init(dataManager: DataManager, wallet: Wallet? = nil) {
         print("WalletActionViewModel - init")
         
-        self.dataManager = DataManager(context: context)
+        self.dataManager = dataManager
         self.validationManager = ValidationManager()
         
         walletToEdit = wallet
@@ -61,9 +63,18 @@ class WalletActionViewModel: NSObject, ObservableObject {
                                                            sectionNameKeyPath: nil, cacheName: nil)
         super.init()
         walletTypesController.delegate = self
-        walletTypesPerformFetch()        
+        walletTypesPerformFetch()
         
-        typeSelector = 0
+        keyboardHelper = KeyboardHelper { [self] animation, keyboardFrame, duration in
+            switch animation {
+            case .keyboardWillShow:
+                isKeyboardShown = true
+            case .keyboardWillHide:
+                isKeyboardShown = false
+            }
+        }
+        
+        updateTypeSelector()
         if let walletToEdit = wallet {
             updateFormFields(walletToEdit)
         }
@@ -87,6 +98,12 @@ class WalletActionViewModel: NSObject, ObservableObject {
     }
     
     // MARK: -- Helper Functions
+    
+    func updateTypeSelector() {
+        if type == nil {
+            typeSelector = 0
+        }
+    }
     
     private func updateWalletType() {
         if walletTypes.indices.contains(typeSelector) {

@@ -17,11 +17,11 @@ struct LabeledWheelPicker<T: Hashable>: ViewModifier {
             Text(label)
                 .font(labelFont)
                 .multilineTextAlignment(.center)
-                .frame(maxWidth:. infinity)
+                .frame(width: 100)
             
             Picker(label, selection: $selection) { content }
                 .pickerStyle(WheelPickerStyle())
-                .frame(maxWidth: 230, maxHeight: 100)
+                .frame(maxWidth: 180, maxHeight: 100)
                 .clipped()
         }
     }

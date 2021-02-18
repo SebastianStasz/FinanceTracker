@@ -24,6 +24,23 @@ enum WalletTypeCheck {
     }
 }
 
+enum CategoryCheck {
+    case valid
+    case invalid
+    case empty
+    
+    var message: String {
+        switch self {
+        case .invalid:
+            return "Selected category is incorrect." // Should never happend
+        case .empty:
+            return "No categories. Create one first."
+        case .valid:
+            return ""
+        }
+    }
+}
+
 enum NameCheck {
     case valid
     case invalid
@@ -63,9 +80,9 @@ enum AmountCheck {
         case .invalid:
             return "Passed value is incorrect."
         case .empty:
-            return "You need to specify"
+            return "You need to specify the value."
         case .equalZero:
-            return "cannot equal zero."
+            return "The value cannot equal zero."
         }
     }
 }

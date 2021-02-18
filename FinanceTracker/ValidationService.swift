@@ -48,4 +48,8 @@ struct ValidationService {
         }
         return .invalid
     }
+    
+    init() {
+        print("ValidationService - init")
+    }
 }

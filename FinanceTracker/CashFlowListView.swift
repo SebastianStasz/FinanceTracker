@@ -11,6 +11,9 @@ struct CashFlowListView<O: CashFlow>: View {
     
     @StateObject private var cashFlowVM: CashFlowListViewModel<O>
     
+    @Binding private var popUpController: WalletDetailViewPopUp
+    @Binding private var cashFlowToEdit: O?
+    
     // MARK: -- Main View
     
     var body: some View {
@@ -21,9 +24,10 @@ struct CashFlowListView<O: CashFlow>: View {
                 
                 monthPicker ; Spacer()
                 
-                Button(action: createCashFlow) {
+                Button(action: addCashFlow) {
                     PlusButtonLabel(btnSize: 30, btnIconSize: 12)
                 }
+                
             }
             .padding(.bottom, 10)
             
@@ -64,8 +68,11 @@ struct CashFlowListView<O: CashFlow>: View {
         List {
             ForEach(cashFlowVM.cashFlowList, id: \.self) { cashFlow in
                 ListRow(cashFlow: cashFlow)
+                    .contextMenu() {
+                        Button("Edit") { editCashFlow(cashFlow) }
+                        Button("Delete") { deleteCashFlow(cashFlow) }
+                    }
             }
-            .onDelete(perform: deleteCashFlow)
             .listRowInsets(EdgeInsets())
         }
         .listStyle(PlainListStyle())
@@ -101,20 +108,41 @@ struct CashFlowListView<O: CashFlow>: View {
     
     // MARK: -- Intents
     
-    func deleteCashFlow(at indexSet: IndexSet) {
-        let _ = indexSet.map { cashFlowVM.delete(at: $0) }
+    func deleteCashFlow(_ cashFlow: O) {
+        let _ = cashFlowVM.delete(cashFlow)
     }
     
-    func createCashFlow() {
-        
+    func addCashFlow() {
+        cashFlowToEdit = nil
+        showPopUp()
+    }
+    
+    func editCashFlow(_ cashFlow: O) {
+        cashFlowToEdit = cashFlow
+        showPopUp()
+    }
+    
+    func showPopUp() {
+        let isIncome = O.self == Income.self
+        popUpController = isIncome ? .income : .expense
     }
 }
 
+
+// MARK: -- CashFlowListView Initializer
+
 extension CashFlowListView {
-    init(viewModel: CashFlowListViewModel<O>) {
+    
+    init(for walletID: UUID, popUp: Binding<WalletDetailViewPopUp>, cashFlowToEdit: Binding<O?>, dataManager: DataManager) {
+        print("CashFlowListView - init")
+        
+        let viewModel = CashFlowListViewModel<O>(for: walletID, dataManager: dataManager)
         _cashFlowVM = StateObject(wrappedValue: viewModel)
+        _popUpController = popUp
+        _cashFlowToEdit = cashFlowToEdit
     }
 }
+
 
 // MARK: -- List Row
 
@@ -160,9 +188,9 @@ struct CashFlowListView_Previews: PreviewProvider {
         
         let wallets = generateSampleData(context: context)
         
-        let cashFlowVM = CashFlowListViewModel<Income>(for: wallets[0].id!,
-                                                       dataManager: dataManager)
-        
-        CashFlowListView(viewModel: cashFlowVM)
+        CashFlowListView<Income>(for: wallets[0].id!,
+                         popUp: Binding.constant(WalletDetailViewPopUp.none),
+                         cashFlowToEdit: Binding.constant(nil),
+                         dataManager: dataManager)
     }
 }

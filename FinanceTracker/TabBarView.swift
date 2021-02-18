@@ -9,12 +9,11 @@ import SwiftUI
 import CoreData
 
 struct TabBarView: View {
-    
-    @Environment(\.managedObjectContext) private var context
+    @EnvironmentObject var dataManager: DataManager
     
     @StateObject private var walletListVM: WalletListViewModel
     
-    @State var selectedTab = TabViews.TabView1
+    @State private var selectedTab = TabViews.TabView1
     
     // MARK: -- Main View
     
@@ -22,16 +21,18 @@ struct TabBarView: View {
         VStack(spacing: 0) {
             TabView(selection: $selectedTab) {
                 
-                WalletListView(viewModel: walletListVM, context: context)
+                WalletListView(viewModel: walletListVM)
+                    .embedInNavigationView()
                     .tag(TabViews.TabView1)
-                
+
                 Text("TEST")
                     .tag(TabViews.TabView2)
-                
+
                 Text("TEST")
                     .tag(TabViews.TabView3)
-                
+
                 SettingsView()
+                    .embedInNavigationView()
                     .tag(TabViews.TabView4)
             }
 

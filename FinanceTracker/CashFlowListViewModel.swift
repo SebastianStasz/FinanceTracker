@@ -33,8 +33,8 @@ class CashFlowListViewModel<O: CashFlow>: NSObject, NSFetchedResultsControllerDe
     
     // MARK: -- Intents
     
-    func delete(at index: Int) {
-        let _ = dataManager.delete(cashFlowList[index])
+    func delete(_ cashFlow: O) {
+        _ = dataManager.delete(cashFlow)
     }
     
     // MARK: -- Helpers
@@ -55,6 +55,7 @@ class CashFlowListViewModel<O: CashFlow>: NSObject, NSFetchedResultsControllerDe
     // MARK: -- Initializer
     
     init(for walletID: UUID, dataManager: DataManager) {
+        print("CashFlowListViewModel - init")
         
         self.dataManager = dataManager
         self.walletID = walletID as CVarArg

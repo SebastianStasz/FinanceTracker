@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Environment(\.managedObjectContext) private var context
+    @EnvironmentObject var dataManager: DataManager
     
     init() {
         print("SettingsView - init")
@@ -19,20 +19,19 @@ struct SettingsView: View {
     var body: some View {
         List {
             
-            NavigationLink(destination: GroupingEntityListView<WalletType>(context: context)) {
+            NavigationLink(destination: GroupingEntityListView<WalletType>(dataManager: dataManager)) {
                 Text("Wallet Types")
             }
             
-            NavigationLink(destination: GroupingEntityListView<IncomeCategory>(context: context)) {
+            NavigationLink(destination: GroupingEntityListView<IncomeCategory>(dataManager: dataManager)) {
                 Text("Income Categories")
             }
             
-            NavigationLink(destination: GroupingEntityListView<ExpenseCategory>(context: context)) {
+            NavigationLink(destination: GroupingEntityListView<ExpenseCategory>(dataManager: dataManager)) {
                 Text("Expense Categories")
             }
         }
         .navigationTitle("Settings")
-        .embedInNavigationView()
     }
 }
 

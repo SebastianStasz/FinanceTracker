@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import CoreData
 
 struct GroupingEntityPopUpView<O: GroupingEntity>: View {
     
@@ -16,55 +15,24 @@ struct GroupingEntityPopUpView<O: GroupingEntity>: View {
     
     private let onDismiss: () -> Void
     
-    private var actionBtnText: String {
-        geVM.isEditingMode ? "Save" : "Create"
-    }
-    
     // MARK: -- Main View
     
     var body: some View {
-        VStack {
+        
+        TextField("\(O.entityType.capitalized) name", text: $geVM.name)
+            .toLabelTextField(label: "Enter \(O.entityType) name", errorMessage: geVM.validationMessage)
             
-            TextField("\(O.entityType.capitalized) name", text: $geVM.name)
-                .toLabelTextField(label: "Enter \(O.entityType) name", errorMessage: geVM.validationMessage)
-            
-            closeAndActionButtons
-        }
-        .padding(contentPadding)
-        .frame(width: windowWidth)
-        .background(popUpWindowBackground)
+            .embedInPopUpView(btnsHeight: 60,
+                              btnsWidth: 130,
+                              isActionBtnDisabled: !geVM.isValid,
+                              actionBtnText: actionBtnText,
+                              cancelBtn: closePopUp,
+                              actionBtn: actionObject)
     }
     
-    // MARK: -- View Components
-    
-    var popUpWindowBackground: some View {
-        backgroundColor
-            .cornerRadius(windowCornerRadius)
-            .shadow(radius: windowShadowRadius)
+    var actionBtnText: String {
+        geVM.isEditingMode ? "Save" : "Create"
     }
-    
-    var closeAndActionButtons: some View {
-        HStack {
-            
-            Button("Cancel", action: closePopUp)
-                .buttonStyle(PrimaryButtonStyle(width: buttonsWidth, color: .red))
-            
-            Spacer()
-            
-            Button(actionBtnText) { actionObject() }
-                .buttonStyle(PrimaryButtonStyle(width: buttonsWidth))
-                .disabled(!geVM.isValid)
-        }
-    }
-    
-    // MARK: -- View Settings
-    
-    let backgroundColor = Color("primaryInvert").opacity(0.95)
-    let windowCornerRadius: CGFloat = 15
-    let windowShadowRadius: CGFloat = 30
-    let contentPadding: CGFloat = 30
-    let buttonsWidth: CGFloat = 130
-    let windowWidth: CGFloat = 340
     
     // MARK: -- Intent(s)
     
@@ -78,6 +46,8 @@ struct GroupingEntityPopUpView<O: GroupingEntity>: View {
         if actionCompleted { closePopUp() }
     }
 }
+
+// MARK: -- Initializer
 
 extension GroupingEntityPopUpView {
     

@@ -9,16 +9,18 @@ import Foundation
 import SwiftUI
 
 struct PrimaryButtonStyle: ButtonStyle {
+    let height: CGFloat
     let width: CGFloat
     let color: Color
     
-    init(width: CGFloat = 280, color: Color = .blue) {
+    init(width: CGFloat = 280, height: CGFloat = 60, color: Color = .blue) {
+        self.height = height
         self.width = width
         self.color = color
     }
     
     func makeBody(configuration: Configuration) -> some View {
-        PrimaryButton(configuration: configuration, width: width, color: color)
+        PrimaryButton(configuration: configuration, width: width, height: height, color: color)
     }
     
     // Style
@@ -27,6 +29,7 @@ struct PrimaryButtonStyle: ButtonStyle {
         @Environment(\.isEnabled) private var isEnabled: Bool
         let configuration: Configuration
         let width: CGFloat
+        let height: CGFloat
         let color: Color
         
         var body: some View {
@@ -37,7 +40,7 @@ struct PrimaryButtonStyle: ButtonStyle {
         var buttonLabel: some View {
             RoundedRectangle(cornerRadius: 15)
                 .foregroundColor(isEnabled ? color : Color.gray.opacity(0.5))
-                .frame(width: width, height: 60)
+                .frame(width: width, height: height)
         }
     }
 }

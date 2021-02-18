@@ -12,7 +12,8 @@ import CoreData
 struct FinanceTrackerApp: App {
     
     private let persistence: PersistenceController
-    private var context: NSManagedObjectContext
+    
+    @StateObject private var dataManager: DataManager
 
     init() {
         // MARK: Real
@@ -20,13 +21,15 @@ struct FinanceTrackerApp: App {
         
         // MARK: Preview
         self.persistence = PersistenceController.preview
-        self.context = persistence.context
+        
+        let dataManager = DataManager(context: persistence.context)
+        _dataManager = StateObject(wrappedValue: dataManager)
     }
     
     var body: some Scene {
         WindowGroup {
-            TabBarView(context: context)
-                .environment(\.managedObjectContext, context)
+            TabBarView(context: persistence.context)
+                .environmentObject(dataManager)
         }
     }
 }

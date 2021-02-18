@@ -8,10 +8,11 @@
 import Foundation
 import CoreData
 
-struct DataManager {
+class DataManager: ObservableObject {
     private(set) var context: NSManagedObjectContext
     
     init(context: NSManagedObjectContext) {
+        print("DataManager - init")
         self.context = context
     }
     
@@ -59,6 +60,27 @@ struct DataManager {
         
         let operation = save()
         return operation == .succes ? .updated : .failed
+    }
+    
+    // MARK: -- Cash Flow
+    
+    func createCashFlow<O: CashFlow>(_ cashFlow: O.Type, from newCashFlowInfo: CashFlowModel) {
+        let cashFlow = O(context: context)
+        cashFlow.category = newCashFlowInfo.category
+        cashFlow.wallet = newCashFlowInfo.wallet
+        cashFlow.value = newCashFlowInfo.value
+        cashFlow.date = newCashFlowInfo.date
+        
+        let _ = save() // TODO: Grab info
+    }
+    
+    func updateCashFlow(_ cashFlow: CashFlow, from newCashFlowInfo: CashFlowModel) {
+        cashFlow.category = newCashFlowInfo.category
+        cashFlow.wallet = newCashFlowInfo.wallet
+        cashFlow.value = newCashFlowInfo.value
+        cashFlow.date = newCashFlowInfo.date
+        
+        let _ = save() // TODO: Grab info
     }
     
     // MARK: -- Grouping Entity

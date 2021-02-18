@@ -9,11 +9,14 @@ import CoreData
 
 protocol CashFlow: NSManagedObject {
     
-    var category: GroupingEntity { get }
+    var category: GroupingEntity { get set }
+    var wallet: Wallet { get set }
+    var value: Double { get set }
+    var date: Date { get set }
+    
     var valueStr: String { get }
-    var value: Double { get }
     var dateStr: String { get }
-    var date: Date { get }
     
     static var orderByDate: NSSortDescriptor { get }
+    static var type: String { get }
 }

@@ -12,6 +12,7 @@ class ValidationManager: ObservableObject {
     
     private var cancellableSet: Set<AnyCancellable> = []
     private let validation = ValidationService()
+    private let canAmountEqualZero: Bool
     
     var namesInUse = [String]()
     
@@ -21,10 +22,13 @@ class ValidationManager: ObservableObject {
     @Published private(set) var nameMessage = ""
     @Published private(set) var amountMessage = ""
     
-    init() {
+    init(canAmountEqualZero: Bool = true) {
+        print("ValidationManager - init")
+        
+        self.canAmountEqualZero = canAmountEqualZero
         initCombine()
     }
-    
+
     // MARK: -- Validations
     
     var isNameValid: AnyPublisher<NameCheck, Never> {
@@ -39,7 +43,7 @@ class ValidationManager: ObservableObject {
     
     var isAmountValid: AnyPublisher<AmountCheck, Never> {
         $amount
-            .map { self.validation.validateMoney($0) }
+            .map { self.validation.validateMoney($0, canEqualZero: self.canAmountEqualZero) }
             .eraseToAnyPublisher()
     }
     
@@ -74,10 +78,12 @@ class ValidationManager: ObservableObject {
             .map { amountCheck in
                 switch amountCheck {
                 case .empty:
-                    return "\(AmountCheck.empty.message) initial balance."
+                    return AmountCheck.empty.message
                 case .invalid:
                     return AmountCheck.invalid.message
-                default:
+                case .equalZero:
+                    return AmountCheck.equalZero.message
+                case .valid:
                     return ""
                 }
             }
