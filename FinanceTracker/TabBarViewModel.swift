@@ -8,13 +8,13 @@
 import Foundation
 
 enum TabViews: String, CaseIterable {
-    case TabView1 = "Wallets"
-    case TabView2 = "Test1"
+    case TabView1 = "Home"
+    case TabView2 = "Wallets"
     case TabView3 = "Test2"
     case TabView4 = "Settings"
     
     var image: String {
-        ["creditcard.fill", "tag.fill", "tag.fill", "gearshape.fill"][index]
+        ["house.fill", "creditcard.fill", "tag.fill", "gearshape.fill"][index]
     }
     
     var index: Int {

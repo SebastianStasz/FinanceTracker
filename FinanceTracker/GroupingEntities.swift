@@ -1,5 +1,5 @@
 //
-//  GroupingEntityListViewModel.swift
+//  GroupingEntities.swift
 //  FinanceTracker
 //
 //  Created by Sebastian Staszczyk on 14/02/2021.
@@ -8,23 +8,23 @@
 import Foundation
 import CoreData
 
-class GroupingEntityListViewModel<O: GroupingEntity>: NSObject, NSFetchedResultsControllerDelegate, ObservableObject {
+class GroupingEntities<O: GroupingEntity>: NSObject, NSFetchedResultsControllerDelegate, ObservableObject {
     
-    private let dataManager: DataManager
     private let groupingEntitiesController: NSFetchedResultsController<O>
+    private let dataManager: DataManager
     
-    // MARK: -- View Acces
+    // MARK: -- Acces
     
-    @Published private(set) var groupingEntities = [O]()
+    @Published private(set) var all = [O]()
 
     var namesInUse: [String] {
-        groupingEntities.map { $0.name }
+        all.map { $0.name }
     }
     
     // MARK: -- Intents
     
     func deleteObject(at index: Int) -> Bool {
-        let objectToDelete = groupingEntities[index]
+        let objectToDelete = all[index]
         
         if objectToDelete.asignedObjects?.allObjects.isEmpty == true {
             let _ = dataManager.delete(objectToDelete) // TODO: Grab info
@@ -36,7 +36,7 @@ class GroupingEntityListViewModel<O: GroupingEntity>: NSObject, NSFetchedResults
     // MARK: -- Initializer
     
     init(dataManager: DataManager) {
-        print("GroupingEntityListViewModel - init")
+        print("GroupingEntities - init")
         
         self.dataManager = dataManager
         
@@ -58,13 +58,13 @@ class GroupingEntityListViewModel<O: GroupingEntity>: NSObject, NSFetchedResults
         guard let groupingEntities = controller.fetchedObjects as? [O]
         else { return }
         
-        self.groupingEntities = groupingEntities
+        self.all = groupingEntities
     }
     
     private func groupingEntitiesPerformFetch() {
         do {
             try groupingEntitiesController.performFetch()
-            groupingEntities = groupingEntitiesController.fetchedObjects ?? []
+            all = groupingEntitiesController.fetchedObjects ?? []
         } catch {
             print("\nCoreDataManager: failed to fetch grouping entities\n")
         }

@@ -11,17 +11,21 @@ import CoreData
 extension Wallet {
     
     var name: String {
-        get { name_! } // shouldn't fail (force unwrap until app release)
+        get { name_ ?? ""} // shouldn't fail (force unwrap until app release)
         set { name_ = newValue }
     }
     
     var dateCreated: String {
-        get { dateCreated_!.toMediumDate() } // shouldn't fail (force unwrap until app release)
+        get { dateCreated_?.toMediumDate() ?? Date().toMediumDate()} // shouldn't fail (force unwrap until app release)
     }
     
     var type: WalletType {
-        get { type_! } // shouldn't fail (force unwrap until app release)
+        get { type_!  }
         set { type_ = newValue }
+    }
+    
+    var typeName: String {
+        type_?.name ?? ""
     }
     
     var initialBalance: String {
@@ -33,20 +37,20 @@ extension Wallet {
     }
 
     public var incomes: Set<Income> {
-        incomes_ as! Set<Income> // shouldn't fail (force unwrap until app release)
+        incomes_ as? Set<Income> ?? []
     }
     
     public var expenses: Set<Expense> {
-        expenses_ as! Set<Expense> // shouldn't fail (force unwrap until app release)
+        expenses_ as? Set<Expense> ?? []
     }
     
     var icon: WalletIcon {
-        get { WalletIcon(rawValue: icon_!)! } // shouldn't fail (force unwrap until app release)
+        get { WalletIcon(rawValue: icon_ ?? "banknote")!  }
         set { icon_ = newValue.rawValue }
     }
     
     var iconColor: IconColor {
-        get { IconColor(rawValue: iconColor_!)! } // shouldn't fail (force unwrap until app release)
+        get { IconColor(rawValue: iconColor_ ?? "red")! }
         set { iconColor_ = newValue.rawValue }
     }
     

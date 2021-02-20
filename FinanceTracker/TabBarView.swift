@@ -6,26 +6,24 @@
 //
 
 import SwiftUI
-import CoreData
 
 struct TabBarView: View {
-    @EnvironmentObject var dataManager: DataManager
-    
-    @StateObject private var walletListVM: WalletListViewModel
-    
     @State private var selectedTab = TabViews.TabView1
     
-    // MARK: -- Main View
+    init() {
+        print("TabBarView - init")
+        UITabBar.appearance().isHidden = true
+    }
     
     var body: some View {
         VStack(spacing: 0) {
             TabView(selection: $selectedTab) {
                 
-                WalletListView(viewModel: walletListVM)
-                    .embedInNavigationView()
+                HomeView()
                     .tag(TabViews.TabView1)
-
-                Text("TEST")
+                
+                WalletListView()
+                    .embedInNavigationView()
                     .tag(TabViews.TabView2)
 
                 Text("TEST")
@@ -92,17 +90,6 @@ struct TabBarView: View {
     }
 }
 
-extension TabBarView {
-    
-    init(context: NSManagedObjectContext) {
-        print("TabBarView - init")
-        
-        let walletListVM = WalletListViewModel(context: context)
-        _walletListVM = StateObject(wrappedValue: walletListVM)
-        
-        UITabBar.appearance().isHidden = true
-    }
-}
 
 // MARK: -- Tab Bar Button
 
@@ -141,10 +128,10 @@ struct TabBarButton: View {
 }
 
 
-// MARK: -- Preview
+ // MARK: -- Preview
 
-//struct TabBarView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        TabBarView(context: context)
-//    }
-//}
+struct TabBarView_Previews: PreviewProvider {
+    static var previews: some View {
+        TabBarView()
+    }
+}

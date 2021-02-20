@@ -9,36 +9,12 @@ import Foundation
 import CoreData
 
 class DataManager: ObservableObject {
+    
     private(set) var context: NSManagedObjectContext
-    
-    init(context: NSManagedObjectContext) {
-        print("DataManager - init")
-        self.context = context
-    }
-    
-    func delete(_ object: NSManagedObject) -> SavingCheck {
-        context.delete(object)
-        return save()
-    }
-    
-    func fetch<O: NSManagedObject>(sortDescriptors: [NSSortDescriptor]) -> [O] {
-        let fetchRequest: NSFetchRequest<O> = O.fetchRequest() as! NSFetchRequest<O>
-        fetchRequest.predicate = nil
-        fetchRequest.sortDescriptors = sortDescriptors
-        do {
-            let items = try context.fetch(fetchRequest)
-            return items
-        }
-        catch let error as NSError {
-            print("Error getting \(O.Type.self): \(error.localizedDescription), \(error.userInfo)")
-        }
-        return [O]()
-    }
-    
     
     // MARK: -- Wallet
     
-    func createWallet(_ newWallet: WalletModel) -> CreatingWalletCheck {
+    func createWallet(_ newWallet: WalletModel) {
         let wallet = Wallet(context: context)
         wallet.id = UUID()
         wallet.dateCreated_ = Date()
@@ -48,18 +24,22 @@ class DataManager: ObservableObject {
         wallet.iconColor = newWallet.iconColor
         wallet.initialBalance_ = newWallet.initialBalance
         
-        let operation = save()
-        return operation == .succes ? .created : .failed
+        _ = save()
     }
     
-    func updateWallet(_ wallet: Wallet, from newWalletInfo: WalletModel) -> UpdatingWalletCheck {
+    func updateWallet(_ wallet: Wallet, from newWalletInfo: WalletModel) {
         wallet.name = newWalletInfo.name
         wallet.type = newWalletInfo.type
         wallet.icon = newWalletInfo.icon
         wallet.iconColor = newWalletInfo.iconColor
         
-        let operation = save()
-        return operation == .succes ? .updated : .failed
+        _ = save()
+    }
+    
+    func deleteWallet(_ wallet: Wallet) {
+        _ = wallet.incomes.map { delete($0, saveAfterDeleting: false) }
+        _ = wallet.expenses.map { delete($0, saveAfterDeleting: false) }
+        delete(wallet)
     }
     
     // MARK: -- Cash Flow
@@ -99,9 +79,7 @@ class DataManager: ObservableObject {
     // MARK: -- Helper Functions
     
     enum SavingCheck {
-        case succes
-        case failed
-        case noChanges
+        case succes, failed, noChanges
     }
     
     func save() -> SavingCheck {
@@ -117,5 +95,20 @@ class DataManager: ObservableObject {
         }
         
         return .noChanges
+    }
+    
+    func delete(_ object: NSManagedObject, saveAfterDeleting: Bool = true) {
+        context.delete(object)
+        if saveAfterDeleting {
+            _ = save()
+        }
+    }
+    
+    // MARK: -- Initializer
+    
+    init(context: NSManagedObjectContext) {
+        print("DataManager - init")
+        
+        self.context = context
     }
 }

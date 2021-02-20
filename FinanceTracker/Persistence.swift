@@ -8,9 +8,8 @@
 import CoreData
 
 struct PersistenceController {
-    
     let container: NSPersistentContainer
-    
+
     var context: NSManagedObjectContext {
         container.viewContext
     }

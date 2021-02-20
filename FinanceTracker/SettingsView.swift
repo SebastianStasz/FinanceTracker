@@ -10,25 +10,22 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var dataManager: DataManager
     
-    init() {
-        print("SettingsView - init")
-    }
+    init() { print("SettingsView - init") }
     
     // MARK: -- Main View
     
     var body: some View {
         List {
-            
-            NavigationLink(destination: GroupingEntityListView<WalletType>(dataManager: dataManager)) {
-                Text("Wallet Types")
-            }
-            
-            NavigationLink(destination: GroupingEntityListView<IncomeCategory>(dataManager: dataManager)) {
-                Text("Income Categories")
-            }
-            
-            NavigationLink(destination: GroupingEntityListView<ExpenseCategory>(dataManager: dataManager)) {
-                Text("Expense Categories")
+            Section(header: Text("Categories")) {
+                NavigationLink(destination: GroupingEntityListView<WalletType>(dataManager: dataManager)) {
+                    Text("Wallet Types")
+                }
+                NavigationLink(destination: GroupingEntityListView<IncomeCategory>(dataManager: dataManager)) {
+                    Text("Income Categories")
+                }
+                NavigationLink(destination: GroupingEntityListView<ExpenseCategory>(dataManager: dataManager)) {
+                    Text("Expense Categories")
+                }
             }
         }
         .navigationTitle("Settings")

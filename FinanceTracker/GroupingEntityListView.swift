@@ -9,11 +9,8 @@ import SwiftUI
 import CoreData
  
 struct GroupingEntityListView<O>: View where O: GroupingEntity, O: Identifiable {
-    
-    @Environment(\.presentationMode) private var presentationMode
-    @EnvironmentObject var dataManager: DataManager
-    
-    @StateObject private var geListVM: GroupingEntityListViewModel<O>
+    @Environment(\.presentationMode) var presentationMode
+    @StateObject private var groupingEntities: GroupingEntities<O>
     
     @State private var editMode = EditMode.inactive
     @State private var isPopUpPresented = false
@@ -23,7 +20,7 @@ struct GroupingEntityListView<O>: View where O: GroupingEntity, O: Identifiable 
     private let initializeCreating: Bool
     
     var isListEmpty: Bool {
-        geListVM.groupingEntities.isEmpty
+        groupingEntities.all.isEmpty
     }
     
     // MARK: -- Main View
@@ -40,15 +37,14 @@ struct GroupingEntityListView<O>: View where O: GroupingEntity, O: Identifiable 
                 .navigationBarItems(trailing: editButton)
                 .environment(\.editMode, $editMode)
                 
-                Button(action: showCreatingPupUp) { PlusButtonLabel(btnSize: 60, btnIconSize: 28) }
+                Button(action: showCreatingPupUp) { CircleButtonLabel() }
                     .offset(x: geo.size.width / 2 - 60, y: geo.size.height / 2 - 60) // right-bottom corner
                     .opacity(isPlusButtonShown ? 1 : 0)
 
                 if isPopUpPresented {
                     GroupingEntityPopUpView(isPresented: $isPopUpPresented,
                                             toEdit: selectedObject,
-                                            namesInUse: geListVM.namesInUse,
-                                            dataManager: dataManager,
+                                            namesInUse: groupingEntities.namesInUse,
                                             onDismiss: doWhenPopUpDismis)
                 }
             }
@@ -61,7 +57,7 @@ struct GroupingEntityListView<O>: View where O: GroupingEntity, O: Identifiable 
     
     var listWithObjects: some View {
         List {
-            ForEach(geListVM.groupingEntities, content: listRow)
+            ForEach(groupingEntities.all, content: listRow)
                 .onDelete(perform: deleteObject)
         }
         .listStyle(PlainListStyle()).padding(.top)
@@ -137,7 +133,7 @@ struct GroupingEntityListView<O>: View where O: GroupingEntity, O: Identifiable 
     
     func deleteObject(_ indexSet: IndexSet) {
         for index in indexSet {
-            let wasOperationSuccesful = geListVM.deleteObject(at: index)
+            let wasOperationSuccesful = groupingEntities.deleteObject(at: index)
             if !wasOperationSuccesful { isAlertPresented = true }
         }
     }
@@ -174,8 +170,8 @@ extension GroupingEntityListView {
         
         self.initializeCreating = initializeCreating
         
-        let viewModel = GroupingEntityListViewModel<O>(dataManager: dataManager)
-        _geListVM = StateObject(wrappedValue: viewModel)
+        let viewModel = GroupingEntities<O>(dataManager: dataManager)
+        _groupingEntities = StateObject(wrappedValue: viewModel)
     }
 }
 
@@ -186,6 +182,8 @@ struct GroupingEntityListView_Previews: PreviewProvider {
         let persistence = PersistenceController.preview
         let context = persistence.context
         
-        GroupingEntityListView<WalletType>(dataManager: DataManager(context: context))
+        let dataManager = DataManager(context: context)
+        
+        GroupingEntityListView<WalletType>(dataManager: dataManager)
     }
 }

@@ -41,7 +41,8 @@ extension Date {
         
         components.year = 0
         components.month = 1
-        components.day = -1
+        components.day = 0
+        components.hour = -1
         let endDateOfMonth = Calendar.current.date(byAdding: components, to: startDateOfMonth!)
         
         return [startDateOfMonth!, endDateOfMonth!]

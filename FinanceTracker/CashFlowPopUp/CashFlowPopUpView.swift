@@ -8,14 +8,15 @@
 import SwiftUI
 
 struct CashFlowPopUpView<CF, CFC>: View where CF: CashFlow, CFC: CashFlowCategory {
+    @EnvironmentObject var dataManager: DataManager
     
-    @ObservedObject private var popUpVM: CashFlowPopUpViewModel<CF, CFC>
+    @StateObject private var categories: GroupingEntities<CFC>
+    @ObservedObject private var form: CashFlowForm<CF, CFC>
     
-    @Binding private var popUpController: WalletDetailViewPopUp
+    @Binding private var popUpController: CashFlowPopUpController
+    @Binding private var presentedSheet: CashFlowCategorySheet?
     
     @State private var isKeyboardPresented = false
-    
-    private let showCreatingCategorySheet: () -> Void
     
     // MARK: -- Main View
     
@@ -25,7 +26,7 @@ struct CashFlowPopUpView<CF, CFC>: View where CF: CashFlow, CFC: CashFlowCategor
             Text(CF.type)
                 .font(.title2)
             
-            DatePicker("Date:", selection: $popUpVM.date, displayedComponents: [.date])
+            DatePicker("Date:", selection: $form.date, displayedComponents: [.date])
             
             valueInputField
             
@@ -37,7 +38,7 @@ struct CashFlowPopUpView<CF, CFC>: View where CF: CashFlow, CFC: CashFlowCategor
         
         .embedInPopUpView(btnsHeight: buttonsHeight,
                           btnsWidth: buttonsWidth,
-                          isActionBtnDisabled: !popUpVM.isValid,
+                          isActionBtnDisabled: !form.isValid,
                           actionBtnText: actionBtnText,
                           cancelBtn: closePopUp,
                           actionBtn: cashFlowAction)
@@ -52,28 +53,30 @@ struct CashFlowPopUpView<CF, CFC>: View where CF: CashFlow, CFC: CashFlowCategor
             HStack(spacing: 20) {
                 Text("Value:")
                 
-                TextField("100", text: $popUpVM.ammount)
+                TextField("100", text: $form.ammount)
                     .keyboardType(.decimalPad)
                     .toInputFieldStyle()
             }
             
-            FormErrorMessage(popUpVM.ammountMessage)
+            FormErrorMessage(form.ammountMessage)
         }
     }
     
     var categoryPicker: some View {
         VStack(alignment: .leading, spacing: 5) {
             
-            if popUpVM.categories.isEmpty { addCategoryButton }
+            if categories.all.isEmpty { addCategoryButton }
             else {
-                
-                ForEach(popUpVM.categories.indices) { Text(popUpVM.categories[$0].name) }
-                    .embedInWheelPicker("Category:", selection: $popUpVM.categorySelector)
+                ForEach(categories.all, id: \.self) { (category: CFC?) in
+                    Text(category?.name ?? "").tag(category)
+                }
+                .embedInWheelPicker("Category:", selection: $form.category)
+                .onAppear() { form.updateFormFields(categories.all) }
                 
                 addCategoryButton
             }
             
-            FormErrorMessage(popUpVM.categoryMessage)
+            FormErrorMessage(categoryMessage)
         }
     }
     
@@ -83,7 +86,11 @@ struct CashFlowPopUpView<CF, CFC>: View where CF: CashFlow, CFC: CashFlowCategor
     }
 
     var actionBtnText: String {
-        popUpVM.isEditingMode ? "Save" : "Add"
+        form.isEditingMode ? "Save" : "Add"
+    }
+    
+    var categoryMessage: String {
+        categories.all.isEmpty ? "No categories. Create one first." : ""
     }
     
     // MARK: -- View Settings
@@ -91,14 +98,25 @@ struct CashFlowPopUpView<CF, CFC>: View where CF: CashFlow, CFC: CashFlowCategor
     let buttonsWidth: CGFloat = 130
     
     var buttonsHeight: CGFloat {
-        popUpVM.isKeyboardShown ? 40 : 60
+        form.isKeyboardShown ? 40 : 60
     }
     
     // MARK: -- Intents
     
     func cashFlowAction() {
-        let wasOperationSuccesful = popUpVM.cashFlowAction()
-        if wasOperationSuccesful { closePopUp() }
+        if let cashFlowTemplate = form.generateCashFlowModel() { 
+            if let cashFlowToEdit = form.cashFlowToEdit {
+                dataManager.updateCashFlow(cashFlowToEdit, from: cashFlowTemplate)
+            } else {
+                dataManager.createCashFlow(CF.self, from: cashFlowTemplate)
+            }
+            closePopUp()
+        }
+    }
+
+    func showCreatingCategorySheet() {
+        let isIncome = CF.self == Income.self
+        presentedSheet = isIncome ? .addIncomeCategory : .addExpenseCategory
     }
     
     func closePopUp() {
@@ -111,12 +129,13 @@ struct CashFlowPopUpView<CF, CFC>: View where CF: CashFlow, CFC: CashFlowCategor
 
 extension CashFlowPopUpView {
     
-    init(viewModel: CashFlowPopUpViewModel<CF, CFC>, popUp: Binding<WalletDetailViewPopUp>, categorySheet: @escaping () -> Void) {
+    init(viewModel: CashFlowForm<CF, CFC>, popUp: Binding<CashFlowPopUpController>, dataManager: DataManager, categorySheet: Binding<CashFlowCategorySheet?>) {
         print("CashFlowPopUpView - init")
         
-        popUpVM = viewModel
+        form = viewModel
         
         _popUpController = popUp
-        showCreatingCategorySheet = categorySheet
+        _presentedSheet = categorySheet
+        _categories = StateObject(wrappedValue: GroupingEntities(dataManager: dataManager))
     }
 }

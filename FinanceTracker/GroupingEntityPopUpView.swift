@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct GroupingEntityPopUpView<O: GroupingEntity>: View {
-    
-    @ObservedObject private var geVM: GroupingEntityPopUpViewModel<O>
+    @EnvironmentObject var dataManager: DataManager
+    @ObservedObject private var form: GroupingEntityForm<O>
     
     @Binding private var isPresented: Bool
     
@@ -19,19 +19,19 @@ struct GroupingEntityPopUpView<O: GroupingEntity>: View {
     
     var body: some View {
         
-        TextField("\(O.entityType.capitalized) name", text: $geVM.name)
-            .toLabelTextField(label: "Enter \(O.entityType) name", errorMessage: geVM.validationMessage)
+        TextField("\(O.entityType.capitalized) name", text: $form.name)
+            .toLabelTextField(label: "Enter \(O.entityType) name", errorMessage: form.validationMessage)
             
             .embedInPopUpView(btnsHeight: 60,
                               btnsWidth: 130,
-                              isActionBtnDisabled: !geVM.isValid,
+                              isActionBtnDisabled: !form.isValid,
                               actionBtnText: actionBtnText,
                               cancelBtn: closePopUp,
                               actionBtn: actionObject)
     }
     
     var actionBtnText: String {
-        geVM.isEditingMode ? "Save" : "Create"
+        form.isEditingMode ? "Save" : "Create"
     }
     
     // MARK: -- Intent(s)
@@ -42,8 +42,14 @@ struct GroupingEntityPopUpView<O: GroupingEntity>: View {
     }
     
     func actionObject() {
-        let actionCompleted = geVM.groupingEntityAction()
-        if actionCompleted { closePopUp() }
+        guard form.isValid else { return }
+    
+        if let object = form.objectToUpdate {
+            dataManager.updateGroupingEntity(object, name: form.name)
+        } else {
+            dataManager.createGroupingEntity(O.self, name: form.name)
+        }
+        closePopUp()
     }
 }
 
@@ -51,7 +57,7 @@ struct GroupingEntityPopUpView<O: GroupingEntity>: View {
 
 extension GroupingEntityPopUpView {
     
-    init(isPresented: Binding<Bool>, toEdit object: O? = nil, namesInUse: [String], dataManager: DataManager, onDismiss: @escaping () -> Void) {
+    init(isPresented: Binding<Bool>, toEdit object: O? = nil, namesInUse: [String], onDismiss: @escaping () -> Void) {
         
         print("GroupingEntityPopUpView - init")
         
@@ -61,6 +67,6 @@ extension GroupingEntityPopUpView {
         let validationManager = ValidationManager()
         validationManager.namesInUse = namesInUse
 
-        geVM = GroupingEntityPopUpViewModel(edit: object, namesInUse: namesInUse, dataManager: dataManager, validationManager: validationManager)
+        form = GroupingEntityForm(edit: object, namesInUse: namesInUse, validationManager: validationManager)
     }
 }

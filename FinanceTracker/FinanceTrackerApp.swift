@@ -28,7 +28,8 @@ struct FinanceTrackerApp: App {
     
     var body: some Scene {
         WindowGroup {
-            TabBarView(context: persistence.context)
+            TabBarView()
+                .environment(\.managedObjectContext, persistence.context)
                 .environmentObject(dataManager)
         }
     }
