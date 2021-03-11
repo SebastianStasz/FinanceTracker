@@ -8,16 +8,14 @@
 import SwiftUI
 import CoreData
 
-struct CashFlowListView<T: CashFlow>: View {
-    @EnvironmentObject var dataManager: DataManager
-    
+struct CashFlowListView<T: CashFlowProtocol>: View {
+    @Environment(\.managedObjectContext) private var context
+    @StateObject private var date = DateSelector()
     @ObservedObject private var wallet: Wallet
+    @State private var total: Double = 0
     
     @Binding private var popUpController: CashFlowPopUpController
     @Binding private var cashFlowToEdit: T?
-    
-    @StateObject private var date = DateSelector()
-    @State private var total = ""
     
     // MARK: -- View
     
@@ -31,7 +29,7 @@ struct CashFlowListView<T: CashFlow>: View {
                 .frame(height: 25)
         
             FilteredList(wallet: wallet, date: date, order: T.orderByDate, total: $total, type: cashFlowType) { (cashFlow: T) in
-                ListRow(cashFlow: cashFlow)
+                ListRow(cashFlow: cashFlow, currencyCode: wallet.currencyCode)
                     .contextMenu() {
                         Button("Edit") { editCashFlow(cashFlow) }
                         Button("Delete") { deleteCashFlow(cashFlow) }
@@ -47,7 +45,7 @@ struct CashFlowListView<T: CashFlow>: View {
         HStack {
             HStack {
                 Text(cashFlowType)
-                Text(total)
+                Text(total.toCurrency(wallet.currencyCode))
                     .foregroundColor(accentColor)
             }
             .font(.title3)
@@ -88,7 +86,7 @@ struct CashFlowListView<T: CashFlow>: View {
     // MARK: -- Intents
     
     func deleteCashFlow(_ cashFlow: T) {
-        let _ = dataManager.delete(cashFlow)
+        context.delete(cashFlow)
     }
     
     func addCashFlow() {
@@ -110,10 +108,7 @@ struct CashFlowListView<T: CashFlow>: View {
 // MARK: -- CashFlowListView Initializer
 
 extension CashFlowListView {
-    
     init(for wallet: Wallet, popUp: Binding<CashFlowPopUpController>, cashFlowToEdit: Binding<T?>) {
-        print("CashFlowListView - init")
-        
         _popUpController = popUp
         _cashFlowToEdit = cashFlowToEdit
         self.wallet = wallet
@@ -144,8 +139,8 @@ struct ListRow: View {
 }
 
 extension ListRow {
-    init<O: CashFlow>(cashFlow: O) {
-        col1 = String(cashFlow.valueStr)
+    init<O: CashFlowProtocol>(cashFlow: O, currencyCode: String) {
+        col1 = cashFlow.value.toCurrency(currencyCode)
         col2 = cashFlow.category.name
         col3 = cashFlow.dateStr
     }

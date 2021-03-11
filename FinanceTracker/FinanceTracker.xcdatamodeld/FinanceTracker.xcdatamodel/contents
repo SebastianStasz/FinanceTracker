@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="17511" systemVersion="20D64" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="17709" systemVersion="20D74" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Currency" representedClassName="Currency" syncable="YES" codeGenerationType="class">
+        <attribute name="code_" attributeType="String"/>
+        <attribute name="name_" attributeType="String"/>
+        <attribute name="updateDate_" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="rates_" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Rate" inverseName="baseCurrency_" inverseEntity="Rate"/>
+        <relationship name="wallets_" toMany="YES" deletionRule="Nullify" destinationEntity="Wallet" inverseName="currency_" inverseEntity="Wallet"/>
+    </entity>
     <entity name="Expense" representedClassName="Expense" syncable="YES" codeGenerationType="class">
         <attribute name="date_" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="value_" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
@@ -8,6 +15,7 @@
     </entity>
     <entity name="ExpenseCategory" representedClassName="ExpenseCategory" syncable="YES" codeGenerationType="class">
         <attribute name="name_" attributeType="String"/>
+        <attribute name="showInHomeView_" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <relationship name="expenses" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Expense" inverseName="category_" inverseEntity="Expense"/>
     </entity>
     <entity name="Income" representedClassName="Income" syncable="YES" codeGenerationType="class">
@@ -18,7 +26,14 @@
     </entity>
     <entity name="IncomeCategory" representedClassName="IncomeCategory" syncable="YES" codeGenerationType="class">
         <attribute name="name_" attributeType="String"/>
+        <attribute name="showInHomeView_" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <relationship name="incomes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Income" inverseName="category_" inverseEntity="Income"/>
+    </entity>
+    <entity name="Rate" representedClassName="Rate" syncable="YES" codeGenerationType="class">
+        <attribute name="code_" attributeType="String"/>
+        <attribute name="name_" attributeType="String"/>
+        <attribute name="value" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="baseCurrency_" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="rates_" inverseEntity="Currency"/>
     </entity>
     <entity name="Wallet" representedClassName="Wallet" syncable="YES" codeGenerationType="class">
         <attribute name="dateCreated_" attributeType="Date" usesScalarValueType="NO"/>
@@ -28,20 +43,24 @@
         <attribute name="initialBalance_" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="isActive" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="name_" attributeType="String"/>
+        <relationship name="currency_" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="wallets_" inverseEntity="Currency"/>
         <relationship name="expenses_" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Expense" inverseName="wallet_" inverseEntity="Expense"/>
         <relationship name="incomes_" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Income" inverseName="wallet_" inverseEntity="Income"/>
         <relationship name="type_" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="WalletType" inverseName="wallets" inverseEntity="WalletType"/>
     </entity>
     <entity name="WalletType" representedClassName="WalletType" syncable="YES" codeGenerationType="class">
         <attribute name="name_" attributeType="String"/>
+        <attribute name="showInHomeView_" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <relationship name="wallets" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Wallet" inverseName="type_" inverseEntity="Wallet"/>
     </entity>
     <elements>
+        <element name="Currency" positionX="-559.029052734375" positionY="-13.37454223632818" width="128" height="118"/>
         <element name="Expense" positionX="-132.5734252929688" positionY="-147.3218994140625" width="128" height="103"/>
-        <element name="ExpenseCategory" positionX="93.78173828125" positionY="-132.2259979248047" width="128" height="73"/>
-        <element name="Wallet" positionX="-365.3740844726562" positionY="-128.2566223144531" width="128" height="193"/>
-        <element name="WalletType" positionX="-155.31103515625" positionY="96.1380615234375" width="128" height="73"/>
-        <element name="IncomeCategory" positionX="92.83905029296875" positionY="-3.0638427734375" width="128" height="73"/>
+        <element name="ExpenseCategory" positionX="93.78173828125" positionY="-132.2259979248047" width="128" height="88"/>
         <element name="Income" positionX="-131.85205078125" positionY="-18.24917602539062" width="128" height="103"/>
+        <element name="IncomeCategory" positionX="92.83905029296875" positionY="-3.0638427734375" width="128" height="88"/>
+        <element name="Rate" positionX="-793.4335327148438" positionY="12.541015625" width="128" height="103"/>
+        <element name="Wallet" positionX="-385.1093749999999" positionY="-92.64221191406247" width="128" height="208"/>
+        <element name="WalletType" positionX="-155.31103515625" positionY="96.1380615234375" width="128" height="88"/>
     </elements>
 </model>

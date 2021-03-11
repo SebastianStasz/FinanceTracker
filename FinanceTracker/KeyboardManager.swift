@@ -8,14 +8,21 @@
 import Foundation
 import SwiftUI
 
-extension KeyboardHelper {
-    enum Animation {
-        case keyboardWillShow
-        case keyboardWillHide
+class KeyboardManager: ObservableObject {
+    private var keyboardHelper: KeyboardHelper?
+    @Published private(set) var isShown = false
+    
+    init() {
+        keyboardHelper = KeyboardHelper { [self] animation, keyboardFrame, duration in
+            switch animation {
+            case .keyboardWillShow: isShown = true
+            case .keyboardWillHide: isShown = false
+            }
+        }
     }
-
-    typealias HandleBlock = (_ animation: Animation, _ keyboardFrame: CGRect, _ duration: TimeInterval) -> Void
 }
+
+// MARK: -- Keyboard Helper
 
 final class KeyboardHelper {
     private let handleBlock: HandleBlock
@@ -49,4 +56,13 @@ final class KeyboardHelper {
 
         handleBlock(animation, keyboardFrame, duration)
     }
+}
+
+extension KeyboardHelper {
+    enum Animation {
+        case keyboardWillShow
+        case keyboardWillHide
+    }
+
+    typealias HandleBlock = (_ animation: Animation, _ keyboardFrame: CGRect, _ duration: TimeInterval) -> Void
 }

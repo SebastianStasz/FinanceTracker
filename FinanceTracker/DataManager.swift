@@ -7,108 +7,83 @@
 
 import Foundation
 import CoreData
+import Combine
 
 class DataManager: ObservableObject {
+    private var subscriptions = [AnyCancellable]()
+    private let currencyAPI: CurrencyAPI
+    @Published private var currency: CurrencyViewModel
+    private let currencyUpdateTimer = Timer.TimerPublisher(interval: 300, runLoop: .main, mode: .default)
+    private let currencyUpdatePublisher = PassthroughSubject<Void, Never>()
     
-    private(set) var context: NSManagedObjectContext
-    
-    // MARK: -- Wallet
-    
-    func createWallet(_ newWallet: WalletModel) {
-        let wallet = Wallet(context: context)
-        wallet.id = UUID()
-        wallet.dateCreated_ = Date()
-        wallet.name = newWallet.name
-        wallet.type = newWallet.type
-        wallet.icon = newWallet.icon
-        wallet.iconColor = newWallet.iconColor
-        wallet.initialBalance_ = newWallet.initialBalance
+    init(currencyAPI: CurrencyAPI, currencyVM: CurrencyViewModel) {
+        self.currencyAPI = currencyAPI
+        self.currency = currencyVM
         
-        _ = save()
-    }
-    
-    func updateWallet(_ wallet: Wallet, from newWalletInfo: WalletModel) {
-        wallet.name = newWalletInfo.name
-        wallet.type = newWalletInfo.type
-        wallet.icon = newWalletInfo.icon
-        wallet.iconColor = newWalletInfo.iconColor
+        if currencyVM.all.isEmpty { createCurrencies() }
         
-        _ = save()
-    }
-    
-    func deleteWallet(_ wallet: Wallet) {
-        _ = wallet.incomes.map { delete($0, saveAfterDeleting: false) }
-        _ = wallet.expenses.map { delete($0, saveAfterDeleting: false) }
-        delete(wallet)
-    }
-    
-    // MARK: -- Cash Flow
-    
-    func createCashFlow<O: CashFlow>(_ cashFlow: O.Type, from newCashFlowInfo: CashFlowModel) {
-        let cashFlow = O(context: context)
-        cashFlow.category = newCashFlowInfo.category
-        cashFlow.wallet = newCashFlowInfo.wallet
-        cashFlow.value = newCashFlowInfo.value
-        cashFlow.date = newCashFlowInfo.date
-        
-        let _ = save() // TODO: Grab info
-    }
-    
-    func updateCashFlow(_ cashFlow: CashFlow, from newCashFlowInfo: CashFlowModel) {
-        cashFlow.category = newCashFlowInfo.category
-        cashFlow.wallet = newCashFlowInfo.wallet
-        cashFlow.value = newCashFlowInfo.value
-        cashFlow.date = newCashFlowInfo.date
-        
-        let _ = save() // TODO: Grab info
-    }
-    
-    // MARK: -- Grouping Entity
-    
-    func createGroupingEntity<O: GroupingEntity>(_ object: O.Type, name: String) {
-        let object = O(context: context)
-        object.name = name
-        let _ = save()
-    }
-    
-    func updateGroupingEntity(_ object: GroupingEntity, name: String) {
-        object.name = name
-        let _ = save()
-    }
-    
-    // MARK: -- Helper Functions
-    
-    enum SavingCheck {
-        case succes, failed, noChanges
-    }
-    
-    func save() -> SavingCheck {
-        if context.hasChanges {
-            do {
-                try context.save()
-//                print("saving context")
-                return .succes
-            } catch {
-                print("error when saving context: \(error)")
-                return .failed
+        currencyUpdatePublisher
+            .sink { [unowned self] _ in
+                _ = currency.all.map { updateCurrencyExchangeRates(for: $0) }
             }
-        }
+            .store(in: &subscriptions)
         
-        return .noChanges
+        currency.currenciesLoaded
+            .sink(receiveCompletion: { [unowned self] _ in
+                startUpdatingCurrenciesRates()
+            }) { _ in}
+            .store(in: &subscriptions)
     }
     
-    func delete(_ object: NSManagedObject, saveAfterDeleting: Bool = true) {
-        context.delete(object)
-        if saveAfterDeleting {
-            _ = save()
+    private func startUpdatingCurrenciesRates() {
+        currencyUpdatePublisher.send()
+        currencyUpdateTimer.autoconnect()
+            .sink { [unowned self] _ in
+                currencyUpdatePublisher.send()
+            }
+            .store(in: &subscriptions)
+    }
+    
+    private func createCurrencies() {
+        currencyAPI.getCurrencyData()
+            .sink(receiveCompletion: {
+                switch $0 {
+                case .failure(let error):
+                    print("Retrieving currency data failed with error \(error)")
+                case .finished:
+                    PersistenceController.generateData() // For preview purpose
+                    print("finished creating")
+                }
+            }) { currencyData in
+                _ = currencyData.map { [unowned self] in
+                    let currencyInfo = CurrencyMO(code: $0.0, name: $0.1, updatedDate: Date(), rates: [])
+                    currency.create(from: currencyInfo, rates: currencyData)
+                }
+            }
+            .store(in: &subscriptions)
+    }
+    
+    private func updateCurrencyExchangeRates(for currency: Currency) {
+        currencyAPI.getRates(for: currency.code)
+            .sink(receiveCompletion: {
+                if case .failure(let error) = $0 {
+                    print("Retrieving exchange rates failed with error: \(error)")
+                }
+            }) { [unowned self] currencyResponse in
+                updateExchangeRatesValues(for: currency, from: currencyResponse.rates)
+            }
+            .store(in: &subscriptions)
+    }
+    
+    private func updateExchangeRatesValues(for currency: Currency, from newRates: [String : Double]) {
+        currency.updateDate_ = Date()
+        _ = currency.rates.map { rate in
+             rate.value = getExchangeRateValue(from: newRates, for: rate.code)
         }
     }
     
-    // MARK: -- Initializer
-    
-    init(context: NSManagedObjectContext) {
-        print("DataManager - init")
-        
-        self.context = context
+    private func getExchangeRateValue(from rates: [String : Double], for code: String) -> Double {
+        // EUR response doesn't include itself, therefore default set to "1"
+        rates.first(where: { code == $0.0 })?.1 ?? 1
     }
 }

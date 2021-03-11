@@ -6,109 +6,112 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct WalletFormView: View {
-    @Environment(\.presentationMode) var presentationMode
-    @EnvironmentObject var dataManager: DataManager
-    
-    @FetchRequest(entity: WalletType.entity(),
-                  sortDescriptors: [WalletType.orderByName],
-                  predicate: nil
-    ) var walletTypes: FetchedResults<WalletType>
+    @Environment(\.presentationMode) private var presentationMode
+    @EnvironmentObject private var currencies: CurrencyViewModel
+    @EnvironmentObject private var walletTypes: GroupingEntities<WalletType>
+    @EnvironmentObject private var walletVM: WalletViewModel
     
     @StateObject private var form: WalletForm
+    @StateObject private var keyboard = KeyboardManager()
     
     private var detailViewPresentation: Binding<PresentationMode>?
     @State private var isCreatingWalletTypeSheetPresented = false
     @State private var isAlertPresented = false
+    @State private var currencySelector: String? = UserDefaults.standard.string(forKey: "primaryCurrency")
     
     // MARK: -- Main View
     
     var body: some View {
         VStack(spacing: fieldsSpacing) {
             
-            ScrollView{
-                creatingWalletForm
-            }
-            .onTapGesture { hideKeyboard() }
+            creatingWalletForm
             
-            Button(actionButtonLabelText, action: actionWallet)
-                .buttonStyle(PrimaryButtonStyle(height: buttonHeight))
-                .disabled(!form.isValid)
+            HStack(spacing: 0) {
+                Spacer()
+                Button(actionButtonLabelText, action: actionWallet)
+                    .buttonStyle(PrimaryButtonStyle(height: buttonHeight))
+                    .disabled(!form.isValid)
+                Spacer()
+                if keyboard.isShown {
+                    Button { hideKeyboard() } label: { Image(systemName: "keyboard.chevron.compact.down") }
+                    Spacer()
+                }
+            }
+            .padding(.vertical, 10)
+            .padding(.horizontal, 20)
         }
         .navigationBarItems(leading: delete, trailing: cancel)
         .navigationTitle(navigationTitle)
-        .padding(.vertical, 15)
-        .padding(.horizontal, 20)
         .embedInNavigationView()
         
         .onAppear(perform: updateWalletType)
-        
+        .onChange(of: currencySelector) { value in
+            form.currency = currencies.all.first(where: { $0.code == value })
+        }
         .alert(isPresented: $isAlertPresented) { deleteConfirmation }
         
-        .sheet(isPresented: $isCreatingWalletTypeSheetPresented, onDismiss: {  }) {
-            GroupingEntityListView<WalletType>(initializeCreating: true, dataManager: dataManager)
+        .sheet(isPresented: $isCreatingWalletTypeSheetPresented) {
+            GroupingEntityListView<WalletType>(initializeCreating: true)
         }
     }
     
     // MARK: -- Wallet Form
     
     var creatingWalletForm: some View {
-        VStack(alignment: .leading) {
-            
-            TextField("My Wallet", text: $form.name)
-                .toLabelTextField(label: "Name", errorMessage: form.nameMessage)
-
-            TextField("100", text: $form.balance)
-                .toLabelTextField(label: "Initial balance", errorMessage: form.balanceMessage)
-                .keyboardType(.decimalPad)
-                .disabled(form.isEditingMode ? true : false)
-                .opacity(form.isEditingMode ? 0.6 : 1)
-            
-            walletTypePicker
-            
-            Spacer()
-            
-            ForEach(WalletIcon.allCases, content: iconIndicator)
-                .embedInWheelPicker("Icon", labelFont: labelFont, selection: $form.icon)
-            
-            ForEach(IconColor.allCases, content: iconColorIndicator)
-                .embedInWheelPicker("Icon color", labelFont: labelFont, selection: $form.iconColor)
-            
-            Spacer()
-        }
-    }
-    
-    // MARK: -- Wallet Type Picker
-    
-    var walletTypePicker: some View {
-        VStack(alignment: .leading) {
-            HStack {
-                
-                Text("Type")
-                    .font(labelFont)
-
-                Picker(form.type?.name ?? "--------", selection: $form.type) {
-                    ForEach(walletTypes, id: \.self) { (type: WalletType?) in
-                        Text(type?.name ?? "").tag(type)
-                            .font(.headline)
-                    }
+        Form {
+            Section(header: Text("Details")) {
+                HStack {
+                    Text("Name")
+                    TextField("My Wallet", text: $form.name)
+                        .multilineTextAlignment(.trailing)
                 }
-                .frame(maxWidth: 160, maxHeight: 50)
-                .clipped()
-//                .pickerStyle(MenuPickerStyle())
-                .toInputFieldStyle()
+                if !form.nameMessage.isEmpty { FormErrorMessage(form.nameMessage) }
                 
-                Spacer()
+                HStack {
+                    Text("Initial Balance")
+                    TextField("1000", text: $form.balance)
+                        .keyboardType(.decimalPad)
+                        .disabled(form.isEditingMode ? true : false)
+                        .opacity(form.isEditingMode ? 0.6 : 1)
+                        .multilineTextAlignment(.trailing)
+                }
+                if !form.balanceMessage.isEmpty { FormErrorMessage(form.balanceMessage) }
                 
-                Button("new type", action: showWalletTypesEditView)
-                    .buttonStyle(TertiaryButtonStyle(SFSymbol: "plus.app"))
+                CurrencyPickerView(currencies: currencies.all, selector: $currencySelector, title: "Currency")
+                    .disabled(form.isEditingMode ? true : false)
+                
+                HStack {
+                    Text("Type: ")
+                    Button("new type", action: showWalletTypesEditView)
+                        .buttonStyle(TertiaryButtonStyle(SFSymbol: "plus.app"))
+                        .opacity(0.7)
+                    Spacer()
+                    walletTypePicker
+                }
+                if !typeMessage.isEmpty { FormErrorMessage(typeMessage) }
             }
-            FormErrorMessage(typeMessage)
+
+            Section(header: Text("Icon")) {
+                ForEach(WalletIcon.allCases, content: iconIndicator)
+                    .embedInWheelPicker("Icon", selection: $form.icon)
+                ForEach(IconColor.allCases, content: iconColorIndicator)
+                    .embedInWheelPicker("Icon Color", selection: $form.iconColor)
+            }
         }
     }
     
     // MARK: -- View Components
+    
+    var walletTypePicker: some View {
+        Picker(form.type?.name ?? "-------", selection: $form.type) {
+            ForEach(walletTypes.all, id: \.self) { (type: WalletType?) in
+                Text(type?.name ?? "").tag(type)
+            }
+        }.pickerStyle(MenuPickerStyle())
+    }
     
     var cancel: some View {
         Button("Cancel", action: dismissView)
@@ -150,11 +153,11 @@ struct WalletFormView: View {
     }
     
     var typeMessage: String {
-        walletTypes.isEmpty ? "No wallet types. Create one first." : ""
+        walletTypes.all.isEmpty ? "No wallet types. Create one first." : ""
     }
     
     var buttonHeight: CGFloat {
-        form.isKeyboardShown ? 40 : 60
+        keyboard.isShown ? 40 : 60
     }
     
     let fieldsSpacing: CGFloat = 5
@@ -166,9 +169,9 @@ struct WalletFormView: View {
         if let walletTemplate = form.generateWalletModel() {
             
             if let walletToEdit = form.walletToEdit {
-                let _ = dataManager.updateWallet(walletToEdit, from: walletTemplate) // TODO: Grab info
+                let _ = walletVM.update(walletToEdit, from: walletTemplate) // TODO: Grab info
             } else {
-                let _ = dataManager.createWallet(walletTemplate) // TODO: Grab info
+                let _ = walletVM.create(walletTemplate) // TODO: Grab info
             }
             dismissView()
         }
@@ -181,7 +184,7 @@ struct WalletFormView: View {
     func deleteWallet() {
         dismissView()
         detailViewPresentation?.wrappedValue.dismiss()
-        dataManager.deleteWallet(form.walletToEdit!)
+        walletVM.delete(form.walletToEdit!)
     }
     
     // MARK: -- Helper Functions
@@ -195,10 +198,12 @@ struct WalletFormView: View {
     }
     
     func updateWalletType() {
-        if !walletTypes.isEmpty && form.walletToEdit == nil {
-            form.type = walletTypes.first
+        if !walletTypes.all.isEmpty && form.walletToEdit == nil {
+            form.type = walletTypes.all.first
+            form.currency = currencies.all.first(where: { $0.code == currencySelector })
         } else {
             form.updateFormFields()
+            currencySelector = form.walletToEdit!.currencyCode
         }
     }
 }
@@ -206,11 +211,8 @@ struct WalletFormView: View {
 
 // MARK: -- Initializer
 
-extension WalletFormView {
-    
+extension WalletFormView {    
     init(for wallet: Wallet? = nil, presentationMode: Binding<PresentationMode>? = nil) {
-        print("WalletActionView - init")
-        
         _form = StateObject(wrappedValue: WalletForm(wallet: wallet))
         detailViewPresentation = presentationMode
     }

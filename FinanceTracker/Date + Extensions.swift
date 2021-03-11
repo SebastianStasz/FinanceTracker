@@ -15,6 +15,18 @@ extension Date {
         formatter.dateStyle = .medium
         return formatter.string(from: self)
     }
+    
+    func toFullDate() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        return formatter.string(from: self)
+    }
+    
+    func toStandardDate() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: self)
+    }
 }
 
 // MARK: -- Get Date Components
@@ -46,5 +58,13 @@ extension Date {
         let endDateOfMonth = Calendar.current.date(byAdding: components, to: startDateOfMonth!)
         
         return [startDateOfMonth!, endDateOfMonth!]
+    }
+}
+
+// MARK: -- Get Date For x days From Specified Date
+
+extension Date {
+    func getDateFor(days:Int) -> Date {
+        return Calendar.current.date(byAdding: .day, value: days, to: Date())!
     }
 }

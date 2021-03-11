@@ -10,33 +10,33 @@ import CoreData
 
 extension PersistenceController {
     
-    // MARK: Empty database
-    
-    static var empty: PersistenceController = {
-        let result = PersistenceController(inMemory: true)
-        let context = result.context
-        
-        try! context.save()
-        
-        return result
-    }()
-    
     // MARK: Sample data for preview
     
     static var preview: PersistenceController = {
         let result = PersistenceController(inMemory: true)
         let context = result.context
         
-        let _ = generateSampleData(context: context)
         try! context.save()
-        
         return result
     }()
+    
+    static func generateData() {
+        _ = generateSampleData(context: preview.context)
+    }
 }
 
 // MARK: -- Data Generator
 
 func generateSampleData(context: NSManagedObjectContext) -> [Wallet] {
+    
+    let request = NSFetchRequest<Currency>(entityName: "Currency")
+    request.predicate = NSPredicate(format: "code_ == %@ || code_ == %@ || code_ == %@", "EUR", "PLN", "USD")
+    let currenciesResult = try! context.fetch(request)
+    
+    let currencyEUR = currenciesResult.first { $0.code == "EUR" }
+    let currencyPLN = currenciesResult.first { $0.code == "PLN" }
+    let currencyUSD = currenciesResult.first { $0.code == "USD" }
+    let currencies = [currencyEUR, currencyPLN, currencyUSD]
     
     func randomDate() -> Date {
         let months = [1, 2, 3]
@@ -53,13 +53,13 @@ func generateSampleData(context: NSManagedObjectContext) -> [Wallet] {
     func sampleIncomesAndExpenses(wallet: Wallet) {
         let income = Income(context: context)
         income.date_ = randomDate()
-        income.category_ = incomes[Int.random(in: 0..<3)]
+        income.category_ = incomeCategories.randomElement()
         income.value_ = (Double.random(in: 100...1000) * 100).rounded() / 100
         income.wallet_ = wallet
         
         let expense = Expense(context: context)
         expense.date_ = randomDate()
-        expense.category_ = expenses[Int.random(in: 0..<4)]
+        expense.category_ = expenseCategories.randomElement()
         expense.value_ = (Double.random(in: 10...200) * 100).rounded() / 100
         expense.wallet_ = wallet
     }
@@ -73,6 +73,7 @@ func generateSampleData(context: NSManagedObjectContext) -> [Wallet] {
         w.iconColor = walletIconColors[i]
         w.type_ = walletTypes[i]
         w.initialBalance_ = (Double.random(in: 200...1000) * 100).rounded() / 100
+        w.currency_ = currencies[Int.random(in: 0..<3)]
         
         // Create Incomes & Expenses
         for _ in 0..<20 {
@@ -83,26 +84,24 @@ func generateSampleData(context: NSManagedObjectContext) -> [Wallet] {
     }
     
     // Create Income Category
-    let inCat1 = IncomeCategory(context: context)
-    inCat1.name_ = "Payment"
-    let inCat2 = IncomeCategory(context: context)
-    inCat2.name_ = "Interest"
-    let inCat3 = IncomeCategory(context: context)
-    inCat3.name_ = "Gift"
-    let inCat4 = IncomeCategory(context: context)
-    inCat4.name_ = "Award"
+    let incomeCategoryNames = ["Payment", "Interest", "Gift", "Award"]
+    var incomeCategories: [IncomeCategory] = []
+    
+    for name in incomeCategoryNames {
+        let category = IncomeCategory(context: context)
+        category.name_ = name
+        incomeCategories.append(category)
+    }
     
     // Create Expense Category
-    let exCat1 = ExpenseCategory(context: context)
-    exCat1.name_ = "Food out"
-    let exCat2 = ExpenseCategory(context: context)
-    exCat2.name_ = "Food"
-    let exCat3 = ExpenseCategory(context: context)
-    exCat3.name_ = "Hobby"
-    let exCat4 = ExpenseCategory(context: context)
-    exCat4.name_ = "Car"
-    let exCat5 = ExpenseCategory(context: context)
-    exCat5.name_ = "Hygiene"
+    let expenseCategoryNames = ["Food out", "Food", "Hobby", "Car", "Hygiene"]
+    var expenseCategories: [ExpenseCategory] = []
+    
+    for name in expenseCategoryNames {
+        let category = ExpenseCategory(context: context)
+        category.name_ = name
+        expenseCategories.append(category)
+    }
     
     // Create Wallet Types
     let wt1 = WalletType(context: context)
@@ -119,8 +118,7 @@ func generateSampleData(context: NSManagedObjectContext) -> [Wallet] {
     wt6.name = "Play"
     
     let walletTypes = [wt1, wt2, wt3, wt4, wt5, wt6]
-    let incomes = [inCat1, inCat2, inCat3, inCat4]
-    let expenses = [exCat1, exCat2, exCat3, exCat4]
+    
     let walletNames = ["Main", "Car Expenses", "Bank Deposit", "Personal", "Cash", "Savings Account"]
     let walletIcons: [WalletIcon] = [.bag, .banknote, .cart, .bagCircle, .creditcard, .bagFill]
     let walletIconColors: [IconColor] = [.blue1, .gray, .green1, .orange, .pink, .yellow]
@@ -131,6 +129,6 @@ func generateSampleData(context: NSManagedObjectContext) -> [Wallet] {
     for i in 0..<6 {
         wallets.append(sampleWallet(i: i))
     }
-    
+    try! context.save()
     return wallets
 }

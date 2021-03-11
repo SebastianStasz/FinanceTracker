@@ -10,6 +10,7 @@ import Foundation
 struct WalletModel {
     var name: String
     var initialBalance: Double
+    var currency: Currency
     var type: WalletType
     var icon: WalletIcon
     var iconColor: IconColor

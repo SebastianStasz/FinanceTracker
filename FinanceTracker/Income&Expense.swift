@@ -9,9 +9,9 @@ import CoreData
 
 // MARK: -- Income
 
-extension Income: CashFlow {
+extension Income: CashFlowProtocol {
     
-    var category: GroupingEntity {
+    var category: GroupingEntityProtocol {
         get { category_! } // shouldn't fail (force unwrap until app release)
         set { category_ = (newValue as! IncomeCategory) }
     }
@@ -51,9 +51,9 @@ extension Income: CashFlow {
 
 // MARK: -- Expense
 
-extension Expense: CashFlow {
+extension Expense: CashFlowProtocol {
     
-    var category: GroupingEntity {
+    var category: GroupingEntityProtocol {
         get { category_! } // shouldn't fail (force unwrap until app release)
         set { category_ = (newValue as! ExpenseCategory) }
     }
@@ -90,4 +90,6 @@ extension Expense: CashFlow {
         "Expense"
     }
 }
+
+
 

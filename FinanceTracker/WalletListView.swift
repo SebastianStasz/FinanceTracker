@@ -9,31 +9,27 @@ import SwiftUI
 import CoreData
 
 struct WalletListView: View {
-    @Environment(\.managedObjectContext) var context
-    @EnvironmentObject var dataManager: DataManager
-    
-    @FetchRequest(entity: Wallet.entity(),
-                  sortDescriptors: [NSSortDescriptor(keyPath: \Wallet.name_, ascending: true)]
-    ) var wallets: FetchedResults<Wallet>
+    @Environment(\.managedObjectContext) private var context
+    @EnvironmentObject private var walletVM: WalletViewModel
     
     @State private var isCreatingWalletSheetPresented = false
     @State private var isDetailViewPresented = false
-    
-    init() { print("WalletListView - init") }
     
     // MARK: -- View
     
     var body: some View {
         VStack {
-            if wallets.isEmpty { createWalletInfo }
-            else { walletList }
+            if !walletVM.all.isEmpty { walletList }
+            else {
+                EmptyListInfoView(message: noWalletsMessage, btnText: "Create wallet", btnAction: showCreatingWalletSheet)
+            }
         }
         .navigationTitle("Wallets")
         .toolbar { addWalletTrailingButton }
+        
         .sheet(isPresented: $isCreatingWalletSheetPresented) {
             WalletFormView()
                 .environment(\.managedObjectContext, context)
-                .environmentObject(dataManager)
         }
     }
     
@@ -43,7 +39,7 @@ struct WalletListView: View {
         ScrollView {
             VStack(spacing: listRowSpacing) {
                 Divider()
-                ForEach(wallets, id: \.id) { wallet in
+                ForEach(walletVM.all, id: \.id) { wallet in
                     NavigationLink(destination: WalletDetailView(for: wallet)) {
                         WalletCardView(wallet: wallet)
                             .contentShape(Rectangle())
@@ -53,10 +49,6 @@ struct WalletListView: View {
                 }
             }
         }
-    }
-    
-    var createWalletInfo: some View {
-        EmptyListInfoView(message: noWalletsMessage, btnText: "Create wallet", btnAction: showCreatingWalletSheet)
     }
     
     var addWalletTrailingButton: some View {
@@ -73,11 +65,10 @@ struct WalletListView: View {
     }
 }
 
-
 // MARK: -- Wallet Card View
 
 struct WalletCardView: View {
-    let name, image, type, balance: String
+    let name, image, type, balance, currency: String
     let imageColor: Color
     
     var body: some View {
@@ -100,7 +91,7 @@ struct WalletCardView: View {
             }
             HStack {
                 Text("Available balance:")
-                Text("\(balance) PLN").foregroundColor(.green)
+                Text(balance).foregroundColor(.green)
             }
             .font(.subheadline)
         }
@@ -111,9 +102,10 @@ extension WalletCardView {
     init(wallet: Wallet) {
         name = wallet.name
         type = wallet.typeName
-        balance = wallet.totalBalance
+        balance = wallet.totalBalance.toCurrency(wallet.currencyCode)
         image = wallet.icon.rawValue
         imageColor = wallet.iconColor.color
+        currency = wallet.currencyCode
     }
 }
 

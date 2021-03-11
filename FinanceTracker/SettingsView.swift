@@ -8,24 +8,25 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @EnvironmentObject var dataManager: DataManager
-    
-    init() { print("SettingsView - init") }
-    
-    // MARK: -- Main View
+    @EnvironmentObject private var currency: CurrencyViewModel
+    @StateObject private var appSettings = AppSettings()
     
     var body: some View {
-        List {
+        Form {
             Section(header: Text("Categories")) {
-                NavigationLink(destination: GroupingEntityListView<WalletType>(dataManager: dataManager)) {
+                NavigationLink(destination: GroupingEntityListView<WalletType>()) {
                     Text("Wallet Types")
                 }
-                NavigationLink(destination: GroupingEntityListView<IncomeCategory>(dataManager: dataManager)) {
+                NavigationLink(destination: GroupingEntityListView<IncomeCategory>()) {
                     Text("Income Categories")
                 }
-                NavigationLink(destination: GroupingEntityListView<ExpenseCategory>(dataManager: dataManager)) {
+                NavigationLink(destination: GroupingEntityListView<ExpenseCategory>()) {
                     Text("Expense Categories")
                 }
+            }
+            Section(header: Text("Currencies")) {
+                CurrencyPickerView(currencies: currency.all, selector: $appSettings.currencyPicker.primary, title: "Primary:")
+                CurrencyPickerView(currencies: currency.all, selector: $appSettings.currencyPicker.secondary, title: "Secondary:")
             }
         }
         .navigationTitle("Settings")

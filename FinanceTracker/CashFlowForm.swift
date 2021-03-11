@@ -9,15 +9,13 @@ import Foundation
 import CoreData
 import Combine
 
-class CashFlowForm<CF, CFC>: ObservableObject where CF: CashFlow, CFC: CashFlowCategory {
+class CashFlowForm<CF, CFC>: ObservableObject where CF: CashFlowProtocol, CFC: CashFlowCategory {
     private var cancellableSet: Set<AnyCancellable> = []
     private let validationManager: ValidationManager
-    private var keyboardHelper: KeyboardHelper?
     
     private let wallet: Wallet
     let cashFlowToEdit: CF?
     
-    @Published private(set) var isKeyboardShown = false
     @Published private(set) var isValid = false
     @Published var category: CFC?
     @Published var date = Date()
@@ -30,24 +28,17 @@ class CashFlowForm<CF, CFC>: ObservableObject where CF: CashFlow, CFC: CashFlowC
     var ammountMessage: String {
         validationManager.amountMessage
     }
+    
+    var walletCurrencyCode: String {
+        wallet.currencyCode
+    }
 
     // MARK: -- Initializer
     
-    init(toEdit cashFlow: CF? = nil, wallet: Wallet, context: NSManagedObjectContext) {
-        print("CashFlowPopUpViewModel - init")
-        
-        cashFlowToEdit = cashFlow
-        self.wallet = wallet
+    init(toEdit cashFlow: CF? = nil, wallet: Wallet) {
         self.validationManager = ValidationManager(canAmountEqualZero: false)
-        
-        keyboardHelper = KeyboardHelper { [self] animation, keyboardFrame, duration in
-            switch animation {
-            case .keyboardWillShow:
-                isKeyboardShown = true
-            case .keyboardWillHide:
-                isKeyboardShown = false
-            }
-        }
+        self.wallet = wallet
+        cashFlowToEdit = cashFlow
         initCombine()
     }
     
@@ -62,15 +53,15 @@ class CashFlowForm<CF, CFC>: ObservableObject where CF: CashFlow, CFC: CashFlowC
     
     // MARK: -- Helpers
     
-    func updateFormFields(_ categories: [CFC]) {
+    func updateFormFields(_ category: CFC) {
         if let cashFlow = cashFlowToEdit {
             validationManager.amount = cashFlow.valueStr
-            category = cashFlow.category as? CFC
+            self.category = cashFlow.category as? CFC
             date = cashFlow.date
             return
         }
         
-        category = categories.first
+        self.category = category
     }
     
     var isEditingMode: Bool {

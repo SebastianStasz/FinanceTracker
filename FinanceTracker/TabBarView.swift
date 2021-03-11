@@ -7,13 +7,29 @@
 
 import SwiftUI
 
+enum TabViews: String, CaseIterable {
+    case TabView1 = "Home"
+    case TabView2 = "Wallets"
+    case TabView3 = "Test2"
+    case TabView4 = "Settings"
+    
+    var image: String {
+        ["house.fill", "creditcard.fill", "dollarsign.square.fill", "gearshape.fill"][index]
+    }
+    
+    var index: Int {
+        Self.allCases.firstIndex { self == $0 } ?? 0
+    }
+}
+
 struct TabBarView: View {
-    @State private var selectedTab = TabViews.TabView1
+    @State private var selectedTab: TabViews = .TabView1
     
     init() {
-        print("TabBarView - init")
         UITabBar.appearance().isHidden = true
     }
+    
+    // MARK: -- View
     
     var body: some View {
         VStack(spacing: 0) {
@@ -26,7 +42,7 @@ struct TabBarView: View {
                     .embedInNavigationView()
                     .tag(TabViews.TabView2)
 
-                Text("TEST")
+                CurrencyConverterView()
                     .tag(TabViews.TabView3)
 
                 SettingsView()
@@ -130,8 +146,8 @@ struct TabBarButton: View {
 
  // MARK: -- Preview
 
-struct TabBarView_Previews: PreviewProvider {
-    static var previews: some View {
-        TabBarView()
-    }
-}
+//struct TabBarView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        TabBarView()
+//    }
+//}

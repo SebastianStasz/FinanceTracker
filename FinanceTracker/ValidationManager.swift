@@ -13,6 +13,7 @@ class ValidationManager: ObservableObject {
     private var cancellableSet: Set<AnyCancellable> = []
     private let validation = ValidationService()
     private let canAmountEqualZero: Bool
+    private let amountDrop: Int
     
     var namesInUse = [String]()
     
@@ -22,10 +23,9 @@ class ValidationManager: ObservableObject {
     @Published private(set) var nameMessage = ""
     @Published private(set) var amountMessage = ""
     
-    init(canAmountEqualZero: Bool = true) {
-        print("ValidationManager - init")
-        
+    init(canAmountEqualZero: Bool = true, amountDropFirst: Bool = true) {
         self.canAmountEqualZero = canAmountEqualZero
+        amountDrop = amountDropFirst ? 1 : 0
         initCombine()
     }
 
@@ -33,17 +33,19 @@ class ValidationManager: ObservableObject {
     
     var isNameValid: AnyPublisher<NameCheck, Never> {
         $name
-//            .debounce(for: 0.3, scheduler: RunLoop.main)
+            .debounce(for: 0.2, scheduler: RunLoop.main)
             .removeDuplicates()
-            .map {
-                return self.validation.validateName($0, namesInUse: self.namesInUse)
+            .map { [unowned self] name in
+                validation.validateName(name, namesInUse: namesInUse)
             }
             .eraseToAnyPublisher()
     }
     
     var isAmountValid: AnyPublisher<AmountCheck, Never> {
         $amount
-            .map { self.validation.validateMoney($0, canEqualZero: self.canAmountEqualZero) }
+            .map { [unowned self] ammount in
+                validation.validateMoney(ammount, canEqualZero: canAmountEqualZero)
+            }
             .eraseToAnyPublisher()
     }
     
@@ -73,7 +75,7 @@ class ValidationManager: ObservableObject {
             .store(in: &cancellableSet)
         
         isAmountValid
-            .dropFirst()
+            .dropFirst(amountDrop)
             .receive(on: RunLoop.main)
             .map { amountCheck in
                 switch amountCheck {

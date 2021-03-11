@@ -8,12 +8,8 @@
 import SwiftUI
 
 struct CashFlowPopUpControllerView: View {
-    @Environment(\.managedObjectContext) var context
-    @EnvironmentObject var dataManager: DataManager
-    
-    @Binding var presentedPopUp: CashFlowPopUpController
-    
     @State private var presentedSheet: CashFlowCategorySheet?
+    @Binding private var presentedPopUp: CashFlowPopUpController
     
     let wallet: Wallet?
     let incomeToEdit: Income?
@@ -26,15 +22,13 @@ struct CashFlowPopUpControllerView: View {
             if let wallet = wallet {
                 
                 if presentedPopUp == .income {
-                    let incomesVM = CashFlowForm<Income, IncomeCategory>(toEdit: incomeToEdit, wallet: wallet, context: context)
-                    
-                    CashFlowPopUpView(viewModel: incomesVM , popUp: $presentedPopUp, dataManager: dataManager, categorySheet: $presentedSheet)
+                    let incomesVM = CashFlowForm<Income, IncomeCategory>(toEdit: incomeToEdit, wallet: wallet)
+                    CashFlowPopUpView(viewModel: incomesVM, popUp: $presentedPopUp, categorySheet: $presentedSheet)
                 }
                 
                 if presentedPopUp == .expense {
-                    let expensesVM = CashFlowForm<Expense, ExpenseCategory>(toEdit: expenseToEdit, wallet: wallet, context: context)
-                    
-                    CashFlowPopUpView(viewModel: expensesVM, popUp: $presentedPopUp, dataManager: dataManager, categorySheet: $presentedSheet)
+                    let expensesVM = CashFlowForm<Expense, ExpenseCategory>(toEdit: expenseToEdit, wallet: wallet)
+                    CashFlowPopUpView(viewModel: expensesVM, popUp: $presentedPopUp, categorySheet: $presentedSheet)
                 }
             }
         }
@@ -47,19 +41,14 @@ struct CashFlowPopUpControllerView: View {
     }
     
     var addIncomeCategorySheet: some View {
-        GroupingEntityListView<IncomeCategory>(initializeCreating: true, dataManager: dataManager)
+        GroupingEntityListView<IncomeCategory>(initializeCreating: true)
     }
     
     var addExpenseCategorySheet: some View {
-        GroupingEntityListView<ExpenseCategory>(initializeCreating: true, dataManager: dataManager)
+        GroupingEntityListView<ExpenseCategory>(initializeCreating: true)
     }
-}
-
-// MARK: -- Initializer
-
-extension CashFlowPopUpControllerView {
+    
     init(presentedPopUp: Binding<CashFlowPopUpController>, wallet: Wallet?, incomeToEdit: Income? = nil, expenseToEdit: Expense? = nil) {
-        
         self._presentedPopUp = presentedPopUp
         self.wallet = wallet
         self.incomeToEdit = incomeToEdit

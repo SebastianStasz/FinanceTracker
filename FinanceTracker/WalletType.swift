@@ -8,7 +8,7 @@
 import Foundation
 import CoreData
 
-extension WalletType: GroupingEntity {
+extension WalletType: GroupingEntityProtocol {
     
     var name: String {
         get { name_! } // shouldn't fail (force unwrap until app release)
@@ -18,20 +18,29 @@ extension WalletType: GroupingEntity {
     var asignedObjects: NSSet? {
         get { wallets }
     }
+    
+    var showInHomeView: Bool {
+        get { showInHomeView_ }
+        set { showInHomeView_ = newValue }
+    }
 
     static var orderByName: NSSortDescriptor {
         NSSortDescriptor(keyPath: \WalletType.name_, ascending: true)
     }
     
-    static var fetchAll: NSFetchRequest<WalletType> {
-        let request: NSFetchRequest<WalletType> = WalletType.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \WalletType.name_, ascending: true)]
-        request.predicate = nil
-        
-        return request
+    static var entityName: String {
+        "WalletType"
     }
     
     static var entityType: String {
         "type"
+    }
+    
+    static var nameType: String {
+        "wallet type"
+    }
+    
+    static var nameTypePlural: String {
+        "wallet types"
     }
 }

@@ -9,26 +9,19 @@ import SwiftUI
 
 struct LabeledWheelPicker<T: Hashable>: ViewModifier {
     let label: String
-    let labelFont: Font
+    let height: CGFloat
     @Binding var selection: T
 
     func body(content: Content) -> some View {
-        HStack(spacing: 20) {
-            Text(label)
-                .font(labelFont)
-                .multilineTextAlignment(.center)
-                .frame(width: 100)
-            
-            Picker(label, selection: $selection) { content }
-                .pickerStyle(WheelPickerStyle())
-                .frame(maxWidth: 180, maxHeight: 100)
-                .clipped()
-        }
+        Picker(label, selection: $selection) { content }
+            .pickerStyle(WheelPickerStyle())
+            .frame(maxHeight: height)
+            .clipped()
     }
 }
 
 extension View {
-    func embedInWheelPicker<T: Hashable>(_ label: String, labelFont: Font = .headline, selection: Binding<T>) -> some View {
-        modifier(LabeledWheelPicker(label: label, labelFont: labelFont, selection: selection))
+    func embedInWheelPicker<T: Hashable>(_ label: String, selection: Binding<T>, height: CGFloat = 100) -> some View {
+        modifier(LabeledWheelPicker(label: label, height: height, selection: selection))
     }
 }

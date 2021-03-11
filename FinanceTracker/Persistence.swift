@@ -8,13 +8,14 @@
 import CoreData
 
 struct PersistenceController {
-    let container: NSPersistentContainer
+    private let container: NSPersistentContainer
 
     var context: NSManagedObjectContext {
         container.viewContext
     }
 
     init(inMemory: Bool = false) {
+        print("________PERSISTENT CONTAINER____________")
         container = NSPersistentContainer(name: "FinanceTracker")
         if inMemory {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
@@ -24,5 +25,21 @@ struct PersistenceController {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         })
+    }
+    
+    func save() {
+        if context.hasChanges {
+            do {
+                print("------SAVING-------")
+                try context.save()
+            } catch {
+                print("error when saving context: \(error)")
+            }
+        }
+    }
+    
+    func delete(_ object: NSManagedObject) {
+        context.delete(object)
+        save()
     }
 }

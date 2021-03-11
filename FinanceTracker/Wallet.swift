@@ -11,16 +11,16 @@ import CoreData
 extension Wallet {
     
     var name: String {
-        get { name_ ?? ""} // shouldn't fail (force unwrap until app release)
+        get { name_ ?? ""}
         set { name_ = newValue }
     }
     
     var dateCreated: String {
-        get { dateCreated_?.toMediumDate() ?? Date().toMediumDate()} // shouldn't fail (force unwrap until app release)
+        get { dateCreated_?.toMediumDate() ?? Date().toMediumDate()}
     }
     
     var type: WalletType {
-        get { type_!  }
+        get { type_!  } // shouldn't fail (force unwrap until app release)
         set { type_ = newValue }
     }
     
@@ -28,12 +28,25 @@ extension Wallet {
         type_?.name ?? ""
     }
     
+    var currency: Currency {
+        get { currency_!  } // shouldn't fail (force unwrap until app release)
+        set { currency_ = newValue }
+    }
+    
+    var currencyCode: String {
+        currency_?.code ?? ""
+    }
+    
     var initialBalance: String {
         get { String(initialBalance_) }
     }
     
-    var totalBalance: String {
-        get { String(calculateBalance()) }
+    var totalBalance: Double {
+        calculateBalance()
+    }
+    
+    var totalBalanceStr: String {
+        String(totalBalance)
     }
 
     public var incomes: Set<Income> {
@@ -53,7 +66,6 @@ extension Wallet {
         get { IconColor(rawValue: iconColor_ ?? "red")! }
         set { iconColor_ = newValue.rawValue }
     }
-    
     // MARK: -- Functions
     
     func calculateBalance() -> Double {
@@ -64,27 +76,8 @@ extension Wallet {
         return balance
     }
     
-    // MARK: -- Intents
-    
-    static var fetchAll: NSFetchRequest<Wallet> {
-        let request: NSFetchRequest<Wallet> = Wallet.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \Wallet.name_, ascending: true)]
-        request.predicate = nil
-        
-        return request
-    }
-    
-    func withId(_ walletID: UUID, context: NSManagedObjectContext) -> Wallet? {
-        let fetchRequest: NSFetchRequest<Wallet> = Wallet.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", walletID as CVarArg)
-        do {
-            let items = try context.fetch(fetchRequest)
-            return items.first
-        }
-        catch let error as NSError {
-            print("error when getting wallet: \(error)")
-            return nil
-        }
+    static var orderByName: NSSortDescriptor {
+        NSSortDescriptor(key: "name_", ascending: true)
     }
 }
 

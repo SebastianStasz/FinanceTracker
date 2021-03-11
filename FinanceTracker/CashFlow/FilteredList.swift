@@ -7,37 +7,13 @@
 
 import SwiftUI
 
-struct FilteredList<T: CashFlow, Content: View>: View {
+struct FilteredList<T: CashFlowProtocol, Content: View>: View {
     let fetchRequest: FetchRequest<T>
-    var cashFlows: FetchedResults<T> {
-        fetchRequest.wrappedValue
-    }
+    var cashFlows: FetchedResults<T> { fetchRequest.wrappedValue }
     let viewContent: (T) -> Content
     let dateSelector: DateSelector
     let type: String
-    @Binding var total: String
-    
-    init(wallet: Wallet, date: DateSelector, order: NSSortDescriptor, total: Binding<String>, type: String, @ViewBuilder content: @escaping (T) -> Content) {
-        print("FilteredList - init")
-        
-        self.type = type
-        dateSelector = date
-        viewContent = content
-        _total = total
-        
-        let predicate = NSPredicate(
-            format: "%K == %@ && %K >= %@ && %K <= %@",
-            "wallet_", wallet,
-            "date_", date.monthRange[0] as NSDate,
-            "date_", date.monthRange[1] as NSDate
-        )
-        
-        fetchRequest = FetchRequest(
-            entity: T.entity(),
-            sortDescriptors: [order],
-            predicate: predicate
-        )
-    }
+    @Binding var total: Double
     
     // MARK: -- View
     
@@ -70,7 +46,27 @@ struct FilteredList<T: CashFlow, Content: View>: View {
     }
 
     private func updateTotal() {
-        total = cashFlows.map { $0.value }.sumAndRoundToCurrency()
+        total = cashFlows.map { $0.value }.reduce(0, +)
+    }
+    
+    init(wallet: Wallet, date: DateSelector, order: NSSortDescriptor, total: Binding<Double>, type: String, @ViewBuilder content: @escaping (T) -> Content) {
+        self.type = type
+        dateSelector = date
+        viewContent = content
+        _total = total
+        
+        let predicate = NSPredicate(
+            format: "%K == %@ && %K >= %@ && %K <= %@",
+            "wallet_", wallet,
+            "date_", date.monthRange[0] as NSDate,
+            "date_", date.monthRange[1] as NSDate
+        )
+        
+        fetchRequest = FetchRequest(
+            entity: T.entity(),
+            sortDescriptors: [order],
+            predicate: predicate
+        )
     }
 }
 

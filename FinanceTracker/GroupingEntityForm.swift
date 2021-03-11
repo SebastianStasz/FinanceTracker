@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-class GroupingEntityForm<O: GroupingEntity>: ObservableObject {
+class GroupingEntityForm<O: GroupingEntityProtocol>: ObservableObject {
     private var cancellableSet: Set<AnyCancellable> = []
     private let validationManager: ValidationManager
     

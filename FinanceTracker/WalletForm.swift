@@ -13,12 +13,12 @@ class WalletForm: ObservableObject {
     
     private var cancellableSet: Set<AnyCancellable> = []
     private let validationManager: ValidationManager
-    private var keyboardHelper: KeyboardHelper?
     let walletToEdit: Wallet?
    
     @Published private(set) var isValid = false
-    @Published private(set) var isKeyboardShown = false
+    private var isCurrencyValid = false
 
+    @Published var currency: Currency?
     @Published var type: WalletType?
     @Published var icon = WalletIcon.creditcardFill
     @Published var iconColor = IconColor.purple
@@ -45,26 +45,16 @@ class WalletForm: ObservableObject {
         
         validationManager = ValidationManager()
         walletToEdit = wallet
-        
-        keyboardHelper = KeyboardHelper { [self] animation, keyboardFrame, duration in
-            switch animation {
-            case .keyboardWillShow:
-                isKeyboardShown = true
-            case .keyboardWillHide:
-                isKeyboardShown = false
-            }
-        }
         initCombine()
     }
-    
-    // MARK: -- Intents
-    
-    // MARK: -- Helpers
+
+    // MARK: -- Functions
 
     func updateFormFields() {
         if let wallet = walletToEdit {
             name = wallet.name
-            balance = wallet.totalBalance
+            balance = wallet.totalBalanceStr
+            currency = wallet.currency
             icon = wallet.icon
             iconColor = wallet.iconColor
             type = wallet.type
@@ -72,8 +62,8 @@ class WalletForm: ObservableObject {
     }
     
     func generateWalletModel() -> WalletModel? {
-        if let type = type, let balance = Double(balance) {
-            return WalletModel(name: name, initialBalance: balance, type: type, icon: icon, iconColor: iconColor)
+        if let type = type, let balance = Double(balance), let currency = currency {
+            return WalletModel(name: name, initialBalance: balance, currency: currency, type: type, icon: icon, iconColor: iconColor)
         }
         return nil
     }
@@ -84,11 +74,17 @@ class WalletForm: ObservableObject {
 extension WalletForm {
     
     private var isFormValidPublisher: AnyPublisher<Bool, Never> {
-        Publishers.CombineLatest(validationManager.isNameValid, validationManager.isAmountValid)
-            .map { name, balance in
-                let isValid = name == .valid && balance == .valid
+        Publishers.CombineLatest3(validationManager.isNameValid, validationManager.isAmountValid, isCurrencyValidPublisher)
+            .map { name, balance, currency in
+                let isValid = name == .valid && balance == .valid && currency
                 return isValid ? true : false
             }
+            .eraseToAnyPublisher()
+    }
+    
+    private var isCurrencyValidPublisher: AnyPublisher<Bool, Never> {
+        $currency
+            .map { $0 != nil }
             .eraseToAnyPublisher()
     }
     
@@ -96,6 +92,11 @@ extension WalletForm {
         isFormValidPublisher
             .receive(on: RunLoop.main)
             .assign(to: \.isValid, on: self)
+            .store(in: &cancellableSet)
+        
+        isCurrencyValidPublisher
+            .receive(on: RunLoop.main)
+            .assign(to: \.isCurrencyValid, on: self)
             .store(in: &cancellableSet)
     }
 }

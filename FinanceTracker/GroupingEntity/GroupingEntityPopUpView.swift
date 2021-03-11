@@ -7,10 +7,9 @@
 
 import SwiftUI
 
-struct GroupingEntityPopUpView<O: GroupingEntity>: View {
-    @EnvironmentObject var dataManager: DataManager
+struct GroupingEntityPopUpView<O: GroupingEntityProtocol>: View {
+    @EnvironmentObject private var groupingEntityVM: GroupingEntities<O>
     @ObservedObject private var form: GroupingEntityForm<O>
-    
     @Binding private var isPresented: Bool
     
     private let onDismiss: () -> Void
@@ -45,9 +44,9 @@ struct GroupingEntityPopUpView<O: GroupingEntity>: View {
         guard form.isValid else { return }
     
         if let object = form.objectToUpdate {
-            dataManager.updateGroupingEntity(object, name: form.name)
+            groupingEntityVM.update(object, name: form.name)
         } else {
-            dataManager.createGroupingEntity(O.self, name: form.name)
+            groupingEntityVM.create(O.self, name: form.name)
         }
         closePopUp()
     }

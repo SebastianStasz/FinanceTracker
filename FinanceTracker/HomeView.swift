@@ -6,29 +6,35 @@
 //
 
 import SwiftUI
+import SwiftUICharts
+import CoreData
 
 struct HomeView: View {
-    
-    @FetchRequest(
-        entity: Wallet.entity(),
-        sortDescriptors: [NSSortDescriptor(keyPath: \Wallet.name_, ascending: true)]
-    ) var wallets: FetchedResults<Wallet>
-    
-    @State private var selectedWallet: Wallet?
+    @Environment(\.managedObjectContext) private var context
+    @EnvironmentObject private var walletVM: WalletViewModel
+    @EnvironmentObject private var incomeCategories: GroupingEntities<IncomeCategory>
+    @EnvironmentObject private var expenseCategories: GroupingEntities<ExpenseCategory>
     @State private var presentedPopUp: CashFlowPopUpController = .none
+    @State private var selectedWallet: Wallet?
+    
+    // MARK: -- View
     
     var body: some View {
         ZStack {
             VStack {
+                if let wallet = selectedWallet {
+                    CashFlowChartView<Income, IncomeCategory>(wallet: wallet, categories: incomeCategories.all, context: context)
+                    CashFlowChartView<Expense, ExpenseCategory>(wallet: wallet, categories: expenseCategories.all, context: context)
+                }
                 
                 Spacer()
-                
-                if !wallets.isEmpty { addCashFlow }
+                if !walletVM.all.isEmpty { addCashFlow }
             }
             .allowsHitTesting(presentedPopUp == .none ? true : false)
             
             CashFlowPopUpControllerView(presentedPopUp: $presentedPopUp, wallet: selectedWallet)
         }
+        .onAppear() { selectedWallet = walletVM.all.first }
     }
     
     // MARK: -- View Components
@@ -36,7 +42,7 @@ struct HomeView: View {
     var addCashFlow: some View {
         HStack(spacing: 20) {
             Picker("", selection: $selectedWallet) {
-                ForEach(wallets) { (wallet: Wallet?) in
+                ForEach(walletVM.all) { (wallet: Wallet?) in
                     Text(wallet?.name ?? "").tag(wallet)
                 }
             }
@@ -44,16 +50,15 @@ struct HomeView: View {
             .clipped()
             
             VStack(spacing: 15) {
-                Button(action: showExpensePopUp) {
-                    CircleButtonLabel(color: .red,  SFSymbol: "bag.badge.minus")
-                }
                 Button(action: showIncomePopUp) {
                     CircleButtonLabel(SFSymbol: "bag.badge.plus")
+                }
+                Button(action: showExpensePopUp) {
+                    CircleButtonLabel(color: .red,  SFSymbol: "bag.badge.minus")
                 }
             }
         }
         .padding(30)
-        .onAppear() { selectedWallet = wallets.first }
     }
     
     // MARK: -- Intents
@@ -69,8 +74,6 @@ struct HomeView: View {
             presentedPopUp = .expense
         }
     }
-    
-    init() { print("HomeView - init") }
 }
 
 // MARK: -- Preview

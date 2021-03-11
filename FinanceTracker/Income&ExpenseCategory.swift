@@ -7,9 +7,11 @@
 
 import CoreData
 
+protocol CashFlowCategory: GroupingEntityProtocol { }
+
 // MARK: -- Income Category
 
-extension IncomeCategory: GroupingEntity, CashFlowCategory {
+extension IncomeCategory: GroupingEntityProtocol, CashFlowCategory {
     
     var name: String {
         get { name_! } // shouldn't fail (force unwrap until app release)
@@ -20,19 +22,36 @@ extension IncomeCategory: GroupingEntity, CashFlowCategory {
         get { incomes }
     }
     
+    var showInHomeView: Bool {
+        get { showInHomeView_ }
+        set { showInHomeView_ = newValue }
+    }
+    
     static var orderByName: NSSortDescriptor {
         NSSortDescriptor(keyPath: \IncomeCategory.name_, ascending: true)
     }
     
+    static var entityName: String {
+        "IncomeCategory"
+    }
+    
     static var entityType: String {
         "category"
+    }
+    
+    static var nameType: String {
+        "income category"
+    }
+    
+    static var nameTypePlural: String {
+        "income categories"
     }
 }
 
 
 // MARK: -- Expense Category
 
-extension ExpenseCategory: GroupingEntity, CashFlowCategory {
+extension ExpenseCategory: GroupingEntityProtocol, CashFlowCategory {
     
     var name: String {
         get { name_! } // shouldn't fail (force unwrap until app release)
@@ -43,11 +62,28 @@ extension ExpenseCategory: GroupingEntity, CashFlowCategory {
         get { expenses }
     }
     
+    var showInHomeView: Bool {
+        get { showInHomeView_ }
+        set { showInHomeView_ = newValue }
+    }
+    
     static var orderByName: NSSortDescriptor {
         NSSortDescriptor(keyPath: \ExpenseCategory.name_, ascending: true)
     }
     
+    static var entityName: String {
+        "ExpenseCategory"
+    }
+    
     static var entityType: String {
         "category"
+    }
+    
+    static var nameType: String {
+        "expense category"
+    }
+    
+    static var nameTypePlural: String {
+        "expense categories"
     }
 }
