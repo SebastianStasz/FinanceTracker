@@ -24,11 +24,11 @@
 - Combine
 
 ### Illustrations
-![image1](https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_1.png)
-![image2](https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_2.png)
-![image3](https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_3.png)
-![image4](https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_4.png)
-![image5](https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_5.png)
-![image6](https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_6.png)
-![image7](https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_7.png)
-![image8](https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_8.png)
+<img src="https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_1.png" width="281" height="609">
+<img src="https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_2.png" width="281" height="609">
+<img src="https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_3.png" width="281" height="609">
+<img src="https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_4.png" width="281" height="609">
+<img src="https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_5.png" width="281" height="609">
+<img src="https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_6.png" width="281" height="609">
+<img src="https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_7.png" width="281" height="609">
+<img src="https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_8.png" width="281" height="609">
