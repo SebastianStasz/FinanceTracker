@@ -106,7 +106,7 @@ struct CurrencyConverterView: View {
     }
     
     var apiInfoAlert: Alert {
-        Alert(title: Text("API Info"), message: Text("Data provided by: exchangeratesapi.io\nLast update: \(converter.from?.updateDateStr ?? "None")"), dismissButton: .default(Text("Close")))
+        Alert(title: Text("API Info"), message: Text("Data provided by: exchangerate.host\nLast update: \(converter.from?.updateDateStr ?? "None")"), dismissButton: .default(Text("Close")))
     }
     
     var showAPIInfoButton: some View {

@@ -42,11 +42,12 @@ struct FinanceTrackerApp: App {
         _walletTypeVM = StateObject(wrappedValue: walletTypeVM)
         _incomeCategoryVM = StateObject(wrappedValue: incomeCategoryVM)
         _expenseCategoryVM = StateObject(wrappedValue: expenseCategoryVM)
+        
+        setDefaultCurrencies()
     }
     
     var body: some Scene {
         WindowGroup {
-//            CustomChartView(data: HorizontalChartData.sampleData)
             TabBarView()
                 .environment(\.managedObjectContext, persistence.context)
                 .environmentObject(currencyVM)
@@ -59,6 +60,22 @@ struct FinanceTrackerApp: App {
         .onChange(of: scenePhase) { phase in
             if phase == .background {
                 persistence.save()
+            }
+        }
+    }
+    
+    private func setDefaultCurrencies() {
+        if UserDefaults.standard.string(forKey: "primaryCurrency") == nil {
+            let locale = Locale.current
+            let currencyCode = locale.currencySymbol ?? "EUR"
+            UserDefaults.standard.set(currencyCode, forKey: "primaryCurrency")
+        }
+        if UserDefaults.standard.string(forKey: "secondaryCurrency") == nil {
+            let primary = UserDefaults.standard.string(forKey: "primaryCurrency")
+            if primary == "EUR" {
+                UserDefaults.standard.set("USD", forKey: "secondaryCurrency")
+            } else {
+                UserDefaults.standard.set("EUR", forKey: "secondaryCurrency")
             }
         }
     }

@@ -39,7 +39,8 @@ func generateSampleData(context: NSManagedObjectContext) -> [Wallet] {
     let currencies = [currencyEUR, currencyPLN, currencyUSD]
     
     func randomDate() -> Date {
-        let months = [1, 2, 3]
+        let currentMonth = Date().get(.month)
+        let months = [currentMonth - 2, currentMonth - 1, currentMonth]
         let days = Array(1...30)
         
         var components = DateComponents()

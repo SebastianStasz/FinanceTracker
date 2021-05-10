@@ -64,8 +64,7 @@ class GroupingEntities<O: GroupingEntityProtocol>: NSObject, NSFetchedResultsCon
     // MARK: -- Fetch Result Controller
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        guard let groupingEntities = controller.fetchedObjects as? [O]
-        else { return }
+        guard let groupingEntities = controller.fetchedObjects as? [O] else { return }
         
         all = groupingEntities
     }

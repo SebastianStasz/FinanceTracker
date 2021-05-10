@@ -47,7 +47,7 @@ struct WalletFormView: View {
         .navigationTitle(navigationTitle)
         .embedInNavigationView()
         
-        .onAppear(perform: updateWalletType)
+        .onAppear(perform: sendWalletInfo)
         .onChange(of: currencySelector) { value in
             form.currency = currencies.all.first(where: { $0.code == value })
         }
@@ -197,8 +197,8 @@ struct WalletFormView: View {
         isCreatingWalletTypeSheetPresented = true
     }
     
-    func updateWalletType() {
-        if !walletTypes.all.isEmpty && form.walletToEdit == nil {
+    func sendWalletInfo() {
+        if form.walletToEdit == nil {
             form.type = walletTypes.all.first
             form.currency = currencies.all.first(where: { $0.code == currencySelector })
         } else {

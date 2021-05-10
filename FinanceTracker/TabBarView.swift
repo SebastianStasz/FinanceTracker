@@ -35,7 +35,7 @@ struct TabBarView: View {
         VStack(spacing: 0) {
             TabView(selection: $selectedTab) {
                 
-                HomeView()
+                HomeView(selectedTab: $selectedTab)
                     .tag(TabViews.TabView1)
                 
                 WalletListView()

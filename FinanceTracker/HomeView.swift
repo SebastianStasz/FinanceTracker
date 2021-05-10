@@ -17,6 +17,8 @@ struct HomeView: View {
     @State private var presentedPopUp: CashFlowPopUpController = .none
     @State private var selectedWallet: Wallet?
     
+    @Binding var selectedTab: TabViews
+    
     // MARK: -- View
     
     var body: some View {
@@ -25,6 +27,19 @@ struct HomeView: View {
                 if let wallet = selectedWallet {
                     CashFlowChartView<Income, IncomeCategory>(wallet: wallet, categories: incomeCategories.all, context: context)
                     CashFlowChartView<Expense, ExpenseCategory>(wallet: wallet, categories: expenseCategories.all, context: context)
+                } else {
+                    VStack {
+                        Image("wallet")
+                        VStack(spacing: 20) {
+                            Text("Managing your finances does not need to be difficult but you do need to get started.")
+                            Text(" Don’t allow your finances to get out of control before you start to manage them seriously.")
+                        }
+                        .padding(.horizontal).multilineTextAlignment(.center).opacity(0.6)
+                        
+                        Button("Start Now!") { selectedTab = .TabView2 }
+                            .buttonStyle(PrimaryButtonStyle()).padding(.top, 40)
+                    }
+                    .frame(maxHeight: .infinity)
                 }
                 
                 Spacer()
@@ -80,6 +95,6 @@ struct HomeView: View {
 
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
-        HomeView()
+        HomeView(selectedTab: .constant(.TabView1))
     }
 }

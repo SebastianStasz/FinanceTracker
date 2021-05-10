@@ -17,6 +17,7 @@ struct EmptyListInfoView: View {
         VStack {
             Text(message)
                 .multilineTextAlignment(.center)
+                .opacity(0.6)
                 .padding()
             
             Button(btnText, action: btnAction)
