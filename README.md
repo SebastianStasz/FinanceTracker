@@ -1,5 +1,9 @@
 # FinanceTracker
 
+### Info
+
+The project is no longer supported. I know there are many things that could have been done better. However, I am currently working on the another version in UIKit.
+
 ### About
 
 "Finance Tracker" is simple app that allows you to controll your finances. 
@@ -22,6 +26,10 @@
 - SwiftUI
 - CoreData
 - Combine
+
+### Video Presentation
+
+https://www.youtube.com/watch?v=D11v02QWFEg
 
 ### Illustrations
 <img src="https://github.com/SebastianStasz/FinanceTracker/blob/origin/Ilustrations/image_1.png" width="281" height="609">
