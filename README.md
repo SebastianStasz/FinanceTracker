@@ -2,7 +2,7 @@
 
 ### Info
 
-The project is no longer supported. I know there are many things that could have been done better. However, I am currently working on the another version in UIKit.
+The project is no longer supported. I know there are many things that could have been done better. However, I am currently working on the another version (https://github.com/SebastianStasz/FinanceUnderControl). I have also version in UIKit (https://github.com/SebastianStasz/WalletUnderControl).
 
 ### About
 
